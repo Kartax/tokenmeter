@@ -12,6 +12,7 @@ struct PopoverView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 24)
             Divider()
+            UpdateRow()
             PopoverFooter(onOpenSettings: onOpenSettings, onQuit: onQuit)
         }
         .frame(width: 300)
