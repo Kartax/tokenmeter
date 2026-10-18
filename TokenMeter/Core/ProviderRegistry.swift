@@ -9,7 +9,10 @@ enum ProviderRegistry {
         case .ollama:
             CredentialedReader(provider: OllamaProvider.live,
                                source: OllamaProvider.credentialSource)
-        case .claude, .codex, .nous:
+        case .claude:
+            CredentialedReader(provider: ClaudeProvider.live,
+                               source: ClaudeProvider.credentialSource)
+        case .codex, .nous:
             nil
         }
     }
