@@ -1,0 +1,61 @@
+name: TokenMeter
+options:
+  bundleIdPrefix: org.kartax
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: "8HAG9JU2ZK"
+    # Not sandboxed (ADR 0002): no entitlements file, no App Group.
+    ENABLE_APP_SANDBOX: NO
+  configs:
+    # Hardened Runtime is mandatory for notarization.
+    Release:
+      ENABLE_HARDENED_RUNTIME: YES
+
+targets:
+  TokenMeter:
+    type: application
+    platform: macOS
+    sources:
+      - TokenMeter
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.kartax.TokenMeter
+        INFOPLIST_FILE: TokenMeter/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+
+  TokenMeterTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: TokenMeterTests
+        excludes:
+          - "**/.gitkeep"
+    dependencies:
+      - target: TokenMeter
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.kartax.TokenMeterTests
+        GENERATE_INFOPLIST_FILE: YES
+        BUNDLE_LOADER: $(TEST_HOST)
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/TokenMeter.app/Contents/MacOS/TokenMeter
+
+schemes:
+  TokenMeter:
+    build:
+      targets:
+        TokenMeter: all
+    run:
+      config: Debug
+    test:
+      targets:
+        - name: TokenMeterTests
+    archive:
+      config: Release
