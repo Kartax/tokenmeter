@@ -32,8 +32,26 @@ struct GeneralSettingsView: View {
                     }
                 }
             }
+            NotificationsSection(store: store)
             AppBehaviourSection()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// The global "Notifications" switch (off by default). Turning it on requests the system's
+/// notification permission — the only time it is asked for.
+struct NotificationsSection: View {
+    @Bindable var store: AccountStore
+
+    var body: some View {
+        Section {
+            Toggle("Notifications", isOn: Binding(
+                get: { store.notificationsEnabled },
+                set: { store.setNotificationsEnabled($0) }
+            ))
+        } footer: {
+            Text("Notify when usage crosses an Account's threshold or credits run low.")
+        }
     }
 }

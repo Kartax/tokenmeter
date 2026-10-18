@@ -1,5 +1,75 @@
 import SwiftUI
 import AppKit
+import UserNotifications
+
+/// Sends the notifications decided in Core (seam B) and owns the permission request: the
+/// system asks only when the Notifications switch is first enabled.
+@MainActor
+final class NotificationSender {
+    static let shared = NotificationSender()
+
+    private let center = UNUserNotificationCenter.current()
+
+    /// Permission was granted (or already determined) for the current setting state.
+    private(set) var permissionDenied = false
+
+    func start(store: AccountStore) {
+        observeDecisions(store: store)
+        observeSwitch(store: store)
+        // Permission is requested only when the switch is first enabled (Settings).
+    }
+
+    private func observeDecisions(store: AccountStore) {
+        NotificationCenter.default.addObserver(
+            forName: .tokenMeterNotification, object: nil, queue: .main) { [weak self] note in
+            guard let self, let sent = note.object as? [OutgoingNotification] else { return }
+            Task { @MainActor in self.send(sent) }
+        }
+    }
+
+    private func observeSwitch(store: AccountStore) {
+        NotificationCenter.default.addObserver(
+            forName: .tokenMeterNotificationsSwitch, object: nil, queue: .main) { [weak self] note in
+            guard let self, note.userInfo?["enabled"] as? Bool == true else { return }
+            Task { @MainActor in self.requestPermission() }
+        }
+    }
+
+    /// Asks the system for notification permission; a denial is remembered so sends stay quiet.
+    func requestPermission() {
+        center.getNotificationSettings { [weak self] settings in
+            guard let self else { return }
+            if settings.authorizationStatus == .notDetermined {
+                center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
+                    Task { @MainActor in self.permissionDenied = !granted }
+                }
+            } else {
+                Task { @MainActor in self.permissionDenied = settings.authorizationStatus == .denied }
+            }
+        }
+    }
+
+    /// Posts one `UNMutableNotificationContent` per decided notification.
+    private func send(_ notifications: [OutgoingNotification]) {
+        guard !permissionDenied else {
+            appLog.info("Notifications denied; dropping \(notifications.count, privacy: .public)")
+            return
+        }
+        for notification in notifications {
+            let content = UNMutableNotificationContent()
+            content.title = notification.title
+            content.body = notification.body
+            // Identifying per reset period: a re-sent id replaces rather than duplicates.
+            let request = UNNotificationRequest(identifier: notification.id, content: content, trigger: nil)
+            center.add(request) { error in
+                if let error {
+                    appLog.error("Posting notification failed: \(error.localizedDescription, privacy: .public)")
+                }
+            }
+        }
+        appLog.info("Sent \(notifications.count, privacy: .public) notification(s)")
+    }
+}
 
 /// Owns the status item, its popover, and the cached Settings window.
 @MainActor
@@ -22,6 +92,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         router.showWindow = { [weak self] in self?.openSettings() }
         setupStatusItem()
         UpdateChecker.shared.start()
+        NotificationSender.shared.start(store: store)
         appLog.info("TokenMeter launched")
         Task { await store.refreshAll(.launch) }
         store.startPolling()
