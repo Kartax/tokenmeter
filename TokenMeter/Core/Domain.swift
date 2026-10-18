@@ -120,10 +120,13 @@ struct CreditBalance: Equatable, Codable, Sendable {
     var title: String
     var remaining: Decimal
     var allowance: Decimal?
-    /// ISO 4217 code, e.g. "USD".
+    /// ISO 4217 code, e.g. "USD", or `creditsUnit` for Provider credits that are not money.
     var currency: String
     var renewsAt: Date?
     var isMain: Bool
+
+    /// `currency` of a balance counted in Provider credits rather than money (e.g. Codex credits).
+    static let creditsUnit = "credits"
 }
 
 /// The Quotas and Credit balances fetched for one Account at one moment.

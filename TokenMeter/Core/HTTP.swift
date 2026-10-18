@@ -34,6 +34,34 @@ enum HTTP {
         "Server returned \(status)"
     }
 
+    /// The human-readable message of a JSON error body: `error.message`, `error_description`,
+    /// `message`, `detail`, or a string `error`. Nil when the body has none.
+    static func serverMessage(_ data: Data) -> String? {
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        let error = object["error"] as? [String: Any]
+        let candidates: [Any?] = [error?["message"], object["error_description"], object["message"],
+                                  object["detail"], object["error"]]
+        return candidates.lazy.compactMap { ($0 as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .first { !$0.isEmpty }
+    }
+
+    /// The machine-readable code of a JSON error body: `error.code`, a string `error`, or `code`.
+    static func errorCode(_ data: Data) -> String? {
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        let candidates: [Any?] = [(object["error"] as? [String: Any])?["code"], object["error"], object["code"]]
+        return candidates.lazy.compactMap { $0 as? String }.first { !$0.isEmpty }
+    }
+
+    /// An `application/x-www-form-urlencoded` body (RFC 3986 unreserved characters kept, all else escaped).
+    static func formBody(_ fields: [(String, String)]) -> Data {
+        var unreserved = CharacterSet.alphanumerics
+        unreserved.insert(charactersIn: "-._~")
+        func escape(_ string: String) -> String {
+            string.addingPercentEncoding(withAllowedCharacters: unreserved) ?? string
+        }
+        return Data(fields.map { "\(escape($0.0))=\(escape($0.1))" }.joined(separator: "&").utf8)
+    }
+
     /// Parses ISO 8601 timestamps with or without fractional seconds.
     static func date(_ string: String?) -> Date? {
         guard let string else { return nil }

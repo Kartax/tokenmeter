@@ -71,6 +71,17 @@ final class AccountStore {
         coreLog.info("Removed Account \(id, privacy: .public)")
     }
 
+    /// Signs the Account out without removing it (Codex, Nous): deletes its secrets and forgets
+    /// its Reading, so it shows `.loginExpired(hint)` until it signs in again.
+    func signOut(_ id: UUID, hint: String) throws {
+        guard let account = accounts.first(where: { $0.id == id }) else { return }
+        try readerFor(account.kind)?.deleteSecrets(for: account)
+        readings[id] = nil
+        failures[id] = .loginExpired(hint: hint)
+        persist()
+        coreLog.info("Signed out Account \(id, privacy: .public)")
+    }
+
     /// Stores the outcome of a fetch made outside `refresh` (e.g. after replacing an API key).
     func record(_ result: Result<Reading, ReadingFailure>, for id: UUID) {
         switch result {

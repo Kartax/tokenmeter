@@ -25,9 +25,7 @@ struct AccountRowView: View {
                 }
                 StaleLine(takenAt: reading?.takenAt, note: note)
             case .loginExpired(let hint):
-                Label("Login expired — \(hint)", systemImage: "exclamationmark.triangle.fill")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
+                LoginExpiredLine(account: account, hint: hint)
             case .error(let message):
                 Label(message, systemImage: "xmark.octagon.fill")
                     .font(.caption)
@@ -51,6 +49,31 @@ struct AccountRowView: View {
         var title = "\(account.kind.displayName) · \(account.label)"
         if let plan = lastReading?.plan { title += " — \(plan)" }
         return title
+    }
+}
+
+/// "Login expired — <hint>"; the hint links to the Account in Settings when that's where the
+/// login is fixed (e.g. Codex "Sign in again", Ollama "Check API key").
+private struct LoginExpiredLine: View {
+    var account: Account
+    var hint: String
+    @Environment(SettingsRouter.self) private var router: SettingsRouter?
+
+    var body: some View {
+        if account.kind.recoversInSettings, let router {
+            HStack(spacing: 4) {
+                Label("Login expired —", systemImage: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                Button(hint) { router.showAccount(account.id) }
+                    .buttonStyle(.link)
+                    .help("Open this Account in Settings")
+            }
+            .font(.caption)
+        } else {
+            Label("Login expired — \(hint)", systemImage: "exclamationmark.triangle.fill")
+                .font(.caption)
+                .foregroundStyle(.orange)
+        }
     }
 }
 

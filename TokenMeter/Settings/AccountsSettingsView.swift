@@ -5,6 +5,7 @@ struct AccountsSettingsView: View {
     var store: AccountStore
     @State private var selection: UUID?
     @State private var adding: ProviderKind?
+    @Environment(SettingsRouter.self) private var router
 
     var body: some View {
         HStack(spacing: 0) {
@@ -57,6 +58,11 @@ struct AccountsSettingsView: View {
                 if let added { selection = added }
             }
         }
+        .onChange(of: router.accountToSelect, initial: true) { _, requested in
+            guard let requested else { return }
+            selection = requested
+            router.accountToSelect = nil
+        }
     }
 }
 
@@ -101,7 +107,9 @@ private struct AddAccountSheet: View {
                 OllamaAddAccountForm(store: store, onDone: onDone)
             case .claude:
                 ClaudeAddAccountForm(store: store, onDone: onDone)
-            case .codex, .nous:
+            case .codex:
+                CodexAddAccountForm(store: store, onDone: onDone)
+            case .nous:
                 Text("\(kind.displayName) is not supported yet.")
                 Button("Close") { onDone(nil) }
             }
@@ -151,7 +159,9 @@ private struct AccountDetailView: View {
                 OllamaAccountSettings(store: store, account: account)
             case .claude:
                 ClaudeAccountSettings(account: account)
-            case .codex, .nous:
+            case .codex:
+                CodexAccountSettings(store: store, account: account)
+            case .nous:
                 EmptyView()
             }
             HStack {
