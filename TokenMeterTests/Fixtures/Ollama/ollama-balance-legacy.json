@@ -1,0 +1,12 @@
+{
+  "included": {
+    "session": {
+      "remaining_percent": 75,
+      "resets_at": "2026-10-18T19:00:00Z"
+    },
+    "weekly": {
+      "remaining_percent": 40,
+      "resets_at": "2026-10-20T00:00:00Z"
+    }
+  }
+}

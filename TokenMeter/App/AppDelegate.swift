@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
     private var settingsWindow: NSWindow?
+    private let store = AccountStore()
 
     /// Static gauge icon; a template image so the system tints it for light/dark menu bars.
     private static let icon: NSImage? = {
@@ -19,6 +20,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusItem()
         appLog.info("TokenMeter launched")
+        Task { await store.refreshAll() }
     }
 
     /// Keep the app alive when the Settings window is closed (it's a menu bar app).
@@ -42,6 +44,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         popover.behavior = .transient
         popover.animates = true
         popover.contentViewController = NSHostingController(rootView: PopoverView(
+            store: store,
             onOpenSettings: { [weak self] in self?.openSettings() },
             onQuit: { NSApplication.shared.terminate(nil) }
         ))
@@ -69,7 +72,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func showSettings() {
         NSApp.activate(ignoringOtherApps: true)
         if settingsWindow == nil {
-            let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView()))
+            let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView(store: store)))
             window.title = "TokenMeter Settings"
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
