@@ -17,12 +17,14 @@
 - Layout: `TokenMeter/App` (entry point, `AppDelegate` owning status item, popover, cached Settings window), `TokenMeter/Popover`, `TokenMeter/Settings` (Accounts/General tabs). Domain types, the Provider interface and registry, `AccountStore`, config and Keychain stores go in `TokenMeter/Core`; each Provider is one folder `TokenMeter/Providers/<Name>` (Provider, credentials, Settings forms) plus one case in `ProviderRegistry`. The app is `LSUIElement` and not sandboxed (ADR 0002); keep it an AppKit status-item app, not a SwiftUI window app.
 - Provider tests (seam A) replay anonymised JSON from `TokenMeterTests/Fixtures` through `HTTPStub` (a `URLProtocol`); fixtures must contain no real tokens, emails or org ids.
 - Smoke runs without real accounts: DEBUG builds read `TOKENMETER_<PROVIDER>_BASE_URL` (e.g. `TOKENMETER_OLLAMA_BASE_URL=http://127.0.0.1:8765`) to point a Provider at a local stub; launch the binary in `TokenMeter.app/Contents/MacOS/` directly so the variable is inherited.
+- Refresh scheduling is logged by `AccountStore` (category `core`): `Polling every N min`, `Refresh (launch|scheduled|popover|manual) of N Accounts`, `Refresh (popover) skipped: …`, `Skipping <id>: backed off …`. Use the 1-minute poll interval to watch the cadence. To keep a smoke run off the shared `~/Library/Application Support/TokenMeter`, launch with `CFFIXED_USER_HOME=/tmp/<dir>` (the config moves under it; the Keychain is unaffected).
 
 ## Architecture invariants
 
 - Secrets live only in the Keychain (generic password, service `org.kartax.TokenMeter`, account = Account id, value = Provider-specific JSON). Never write a secret to the config file (`~/Library/Application Support/TokenMeter/config.json`) or to logs; don't interpolate tokens or keys into `Logger` messages. Removing an Account deletes its Keychain item.
 - Windows are identified by their data (e.g. window length or the response field that names them), never by a response's slot position (primary/secondary, array index).
 - Config fields are optional and decoded leniently (immich `AppConfig` pattern); never require a migration.
+- All fetches outside Account setup go through `AccountStore.refreshAll(_:)`/`refresh(_:)`, which never duplicate an in-flight fetch and skip an Account while it backs off after a rate limit (`Retry-After`, else 60 s). The last Reading per Account is persisted in the config file (no secrets) and shown stale after launch until refreshed.
 
 ## Icon and releases
 

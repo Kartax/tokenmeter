@@ -15,7 +15,7 @@ final class AccountStore {
     /// Accounts with a fetch in flight; a refresh of one of these is never duplicated.
     private(set) var refreshing: Set<UUID> = []
     /// Accounts whose Reading was restored from the last session and not refreshed since.
-    private(set) var restored: Set<UUID> = []
+    private var restored: Set<UUID> = []
     /// End of each rate-limited Account's back-off; refreshes skip the Account until then.
     @ObservationIgnored private var backOffUntil: [UUID: Date] = [:]
 
@@ -160,7 +160,7 @@ final class AccountStore {
     }
 
     /// True while the Account waits out a rate limit.
-    func isBackedOff(_ id: UUID) -> Bool {
+    private func isBackedOff(_ id: UUID) -> Bool {
         guard let until = backOffUntil[id] else { return false }
         return now() < until
     }
