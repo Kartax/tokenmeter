@@ -1,0 +1,8 @@
+{
+  "five_hour": null,
+  "seven_day": null,
+  "seven_day_opus": null,
+  "seven_day_sonnet": null,
+  "extra_usage": null,
+  "spend": {"used": 12.5, "limit": 50, "currency": "USD", "resets_at": "2026-11-01T00:00:00Z"}
+}

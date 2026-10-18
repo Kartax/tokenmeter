@@ -44,9 +44,12 @@ struct AccountsSettingsView: View {
                 AccountDetailView(store: store, account: account) { selection = nil }
                     .id(account.id)
             } else {
-                Text(store.accounts.isEmpty ? "Add an Account with +" : "Select an Account")
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                VStack {
+                    Text(store.accounts.isEmpty ? "Add an Account with +" : "Select an Account")
+                        .foregroundStyle(.secondary)
+                    ClaudeDefaultLoginOffer(store: store) { adding = .claude }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .sheet(item: $adding) { kind in
@@ -97,7 +100,9 @@ private struct AddAccountSheet: View {
             switch kind {
             case .ollama:
                 OllamaAddAccountForm(store: store, onDone: onDone)
-            case .claude, .codex, .nous:
+            case .claude:
+                ClaudeAddAccountForm(store: store, onDone: onDone)
+            case .codex, .nous:
                 Text("\(kind.displayName) is not supported yet.")
                 Button("Close") { onDone(nil) }
             }
@@ -150,7 +155,9 @@ private struct AccountDetailView: View {
             switch account.kind {
             case .ollama:
                 OllamaAccountSettings(store: store, account: account)
-            case .claude, .codex, .nous:
+            case .claude:
+                ClaudeAccountSettings(account: account)
+            case .codex, .nous:
                 EmptyView()
             }
             HStack {
