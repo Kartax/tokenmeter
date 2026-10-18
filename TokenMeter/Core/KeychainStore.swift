@@ -67,6 +67,10 @@ struct KeychainCredentialSource<Credentials: Codable & Sendable>: CredentialSour
     var missingHint: String
 
     func load(for account: Account) -> Result<Credentials, ReadingFailure> {
+        #if DEBUG
+        // Debug insecure stub (never in release).
+        if let insecure = insecureLoad(for: account) { return insecure }
+        #endif
         do {
             guard let data = try keychain.data(for: account.id),
                   let credentials = try? JSONDecoder().decode(Credentials.self, from: data) else {
@@ -79,10 +83,71 @@ struct KeychainCredentialSource<Credentials: Codable & Sendable>: CredentialSour
     }
 
     func save(_ credentials: Credentials, for account: Account) throws {
+        #if DEBUG
+        // Debug insecure stub (never in release).
+        if DebugInsecureSecrets.isEnabled { insecureSave(credentials, for: account); return }
+        #endif
         try keychain.set(try JSONEncoder().encode(credentials), for: account.id)
     }
 
     func delete(for account: Account) throws {
+        #if DEBUG
+        // Debug insecure stub (never in release).
+        if DebugInsecureSecrets.isEnabled { insecureDelete(for: account); return }
+        #endif
         try keychain.delete(for: account.id)
     }
 }
+
+#if DEBUG
+// MARK: Debug insecure stub
+// Smoke-run escape hatch: when `TOKENMETER_DEBUG_INSECURE_SECRETS=1` **and** a
+// `CFFIXED_USER_HOME` is set, secrets persist as files under that home instead of the
+// Keychain (which would trigger a macOS consent prompt for the user). Never in release;
+// tests may assert Keychain behaviour separately.
+enum DebugInsecureSecrets {
+    static var isEnabled: Bool {
+        ProcessInfo.processInfo.environment["TOKENMETER_DEBUG_INSECURE_SECRETS"] == "1"
+            && ProcessInfo.processInfo.environment["CFFIXED_USER_HOME"] != nil
+    }
+
+    static func url(for accountID: UUID) -> URL {
+        let home = ProcessInfo.processInfo.environment["CFFIXED_USER_HOME"]!
+        return URL(fileURLWithPath: home)
+            .appendingPathComponent("secrets", isDirectory: true)
+            .appendingPathComponent(accountID.uuidString + ".json")
+    }
+}
+
+extension KeychainCredentialSource {
+    /// Debug insecure stub: reads from the file when enabled, else nil (use the Keychain).
+    func insecureLoad(for account: Account) -> Result<Credentials, ReadingFailure>? {
+        guard DebugInsecureSecrets.isEnabled else { return nil }
+        let url = DebugInsecureSecrets.url(for: account.id)
+        guard let data = try? Data(contentsOf: url),
+              let credentials = try? JSONDecoder().decode(Credentials.self, from: data) else {
+            return .failure(.loginExpired(hint: missingHint))
+        }
+        return .success(credentials)
+    }
+
+    /// Debug insecure stub: writes the file when enabled, else does nothing (Keychain path).
+    func insecureSave(_ credentials: Credentials, for account: Account) {
+        guard DebugInsecureSecrets.isEnabled else { return }
+        let url = DebugInsecureSecrets.url(for: account.id)
+        do {
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
+                                                    withIntermediateDirectories: true)
+            try JSONEncoder().encode(credentials).write(to: url, options: .atomic)
+        } catch {
+            coreLog.error("Debug insecure secret save failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    /// Debug insecure stub: removes the file when enabled, else does nothing (Keychain path).
+    func insecureDelete(for account: Account) {
+        guard DebugInsecureSecrets.isEnabled else { return }
+        try? FileManager.default.removeItem(at: DebugInsecureSecrets.url(for: account.id))
+    }
+}
+#endif

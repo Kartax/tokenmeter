@@ -159,6 +159,16 @@ private struct AccountDetailView: View {
                 Text("Show all Windows")
                 Text("Also show model-scoped Windows and extra Credit balances in the popover.")
             }
+            if store.notificationsEnabled {
+                Picker("Notify at", selection: Binding(
+                    get: { account.threshold },
+                    set: { store.setNotificationThreshold($0, for: account.id) })) {
+                    Text("Off").tag(NotificationThreshold.off)
+                    Text("80%").tag(NotificationThreshold.p80)
+                    Text("90%").tag(NotificationThreshold.p90)
+                    Text("95%").tag(NotificationThreshold.p95)
+                }
+            }
             switch account.kind {
             case .ollama:
                 OllamaAccountSettings(store: store, account: account)
