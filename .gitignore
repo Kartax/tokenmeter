@@ -1,8 +1,7 @@
-# Xcode / generated
+# Xcode / generiert
 *.xcodeproj/
 *.xcworkspace/
 xcuserdata/
 DerivedData/
 build/
 .DS_Store
-.scratch/
