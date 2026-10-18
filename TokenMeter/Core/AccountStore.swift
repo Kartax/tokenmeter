@@ -1,6 +1,11 @@
 import Foundation
 import Observation
 
+extension Notification.Name {
+    /// Carries `[OutgoingNotification]` decided by `AccountStore` (seam B) to the sender.
+    static let tokenMeterNotification = Notification.Name("org.kartax.TokenMeter.notification")
+}
+
 /// App state shared by the popover and Settings: the configured Accounts and the last Reading
 /// per Account (both persisted in the config file), plus the last failure per Account.
 @MainActor @Observable
@@ -18,6 +23,8 @@ final class AccountStore {
     private var restored: Set<UUID> = []
     /// End of each rate-limited Account's back-off; refreshes skip the Account until then.
     @ObservationIgnored private var backOffUntil: [UUID: Date] = [:]
+    /// Notification keys already sent and not reset yet (seam B's already-notified set).
+    private(set) var notifiedKeys: Set<NotifiedKey> = []
 
     /// Poll intervals offered in General, in minutes.
     static let pollIntervals = [1, 2, 5, 15, 30]
@@ -56,6 +63,9 @@ final class AccountStore {
         pollIntervalMinutes = stored.pollIntervalMinutes.flatMap { Self.pollIntervals.contains($0) ? $0 : nil }
             ?? Self.defaultPollInterval
         restored = Set(self.readings.keys)
+        // A restart must not repeat notifications: load the set; entries whose Window or Credit
+        // balance has reset meanwhile drop out (a new period may notify again).
+        notifiedKeys = NotifiedKeySet(keys: stored.alreadyNotified ?? []).pruned(now: now()).keys
     }
 
     /// Refreshes every Account once per poll interval, counted from now. Call once on launch;
@@ -135,6 +145,11 @@ final class AccountStore {
         readings[id] = nil
         failures[id] = nil
         backOffUntil[id] = nil
+        let removedCount = notifiedKeys.filter { $0.accountID == id }.count
+        if removedCount > 0 {
+            notifiedKeys.subtract(notifiedKeys.filter { $0.accountID == id })
+            config.update { $0.alreadyNotified = notifiedKeys }
+        }
         persist()
         coreLog.info("Removed Account \(id, privacy: .public)")
     }
@@ -174,6 +189,29 @@ final class AccountStore {
     private func isBackedOff(_ id: UUID) -> Bool {
         guard let until = backOffUntil[id] else { return false }
         return now() < until
+    }
+
+    // MARK: - Notifications (seam B)
+
+    /// Applies the notification decision to one Account's fresh Reading: sends what it returns
+    /// and persists the updated already-notified set with the config.
+    func decideNotifications(for account: Account, previous: Reading?, new: Reading,
+                             notificationsEnabled: Bool) {
+        let (toSend, updated) = NotificationDecision.decide(
+            previous: previous, new: new, account: account,
+            settings: AccountNotificationSettings(threshold: account.threshold,
+                                                  showAllWindows: account.showAllWindows),
+            notificationsEnabled: notificationsEnabled, notified: NotifiedKeySet(keys: notifiedKeys),
+            now: now())
+        let changed = updated.keys != notifiedKeys
+        notifiedKeys = updated.keys
+        if !toSend.isEmpty {
+            NotificationCenter.default.post(name: .tokenMeterNotification, object: toSend)
+            coreLog.info("Notifications decided for \(account.id, privacy: .public): \(toSend.count, privacy: .public) to send")
+        }
+        if changed {
+            config.update { $0.alreadyNotified = updated.keys }
+        }
     }
 
     // MARK: - Refresh

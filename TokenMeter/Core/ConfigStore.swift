@@ -12,13 +12,18 @@ struct AppConfig: Codable, Equatable {
     var readings: [Reading]?
     /// Background poll interval in minutes (General tab); see `AccountStore.pollIntervals`.
     var pollIntervalMinutes: Int?
+    /// Notification keys already sent, per Account + Window/Credit identity + reset/renewal
+    /// time; persisted so a restart doesn't repeat a notification.
+    var alreadyNotified: Set<NotifiedKey>?
 
     init(accounts: [Account]? = nil, checkForUpdates: Bool? = nil) {
         self.accounts = accounts
         self.checkForUpdates = checkForUpdates
     }
 
-    private enum CodingKeys: String, CodingKey { case accounts, checkForUpdates, readings, pollIntervalMinutes }
+    private enum CodingKeys: String, CodingKey {
+        case accounts, checkForUpdates, readings, pollIntervalMinutes, alreadyNotified
+    }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -26,6 +31,7 @@ struct AppConfig: Codable, Equatable {
         checkForUpdates = try? c.decodeIfPresent(Bool.self, forKey: .checkForUpdates)
         readings = try? c.decodeIfPresent([Lossy<Reading>].self, forKey: .readings)?.compactMap(\.value)
         pollIntervalMinutes = try? c.decodeIfPresent(Int.self, forKey: .pollIntervalMinutes)
+        alreadyNotified = try? c.decodeIfPresent(Set<NotifiedKey>.self, forKey: .alreadyNotified)
     }
 }
 

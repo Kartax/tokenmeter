@@ -1,10 +1,13 @@
 import XCTest
 @testable import TokenMeter
 
-/// Account order, per-Account "show all Windows" and the poll interval persist across launches.
+/// Account order, per-Account "show all Windows", the poll interval and the already-notified
+/// keys persist across launches.
 @MainActor
 final class AccountStoreSettingsTests: XCTestCase {
     private var configDirectory: URL!
+    /// Fixed decision clock (notifications compare reset times against it).
+    private var now = date("2026-10-18T12:00:00Z")
 
     override func setUp() async throws {
         configDirectory = FileManager.default.temporaryDirectory
@@ -19,7 +22,7 @@ final class AccountStoreSettingsTests: XCTestCase {
 
     private func makeStore() -> AccountStore {
         let reader = ScriptedReader()
-        return AccountStore(config: config, readerFor: { _ in reader })
+        return AccountStore(config: config, readerFor: { _ in reader }, now: { [unowned self] in now })
     }
 
     func testDraggingAnAccountReordersThemAndTheOrderPersists() {
@@ -59,5 +62,38 @@ final class AccountStoreSettingsTests: XCTestCase {
     func testUnsupportedStoredPollIntervalFallsBackToFiveMinutes() {
         config.update { $0.pollIntervalMinutes = 7 }
         XCTAssertEqual(makeStore().pollIntervalMinutes, 5)
+    }
+
+    // MARK: - Already-notified keys
+
+    func testAlreadyNotifiedKeysPersistAndPruneOnLoad() {
+        // A past period's key is dropped on load; an active one survives a relaunched store.
+        let store = makeStore()
+        let account = Account(kind: .ollama, label: "A")
+        store.add(account)
+        let past = date("2026-03-01T09:00:00Z")
+        let week = date("2026-10-25T09:00:00Z")
+        let session = date("2026-10-18T17:00:00Z")
+        store.record(.success(Reading(accountID: account.id, takenAt: now, quotas: [], credits: [])), for: account.id)
+        store.decideNotifications(
+            for: account, previous: store.readings[account.id],
+            new: Reading(accountID: account.id, takenAt: now,
+                         quotas: [Quota(window: Window(identity: .session, title: "Session", isMain: true,
+                                       resetsAt: session), percentUsed: 91),
+                                  Quota(window: Window(identity: .week, title: "Week", isMain: true,
+                                        resetsAt: week), percentUsed: 91)],
+                         credits: []),
+            notificationsEnabled: true)
+        XCTAssertFalse(store.notifiedKeys.isEmpty, "the crossing's keys are persisted with the config")
+
+        // Relaunch: the past key is pruned, the fresh one kept.
+        config.update { $0.alreadyNotified = [
+            NotifiedKey(accountID: account.id, window: .session, resetAt: past),
+            NotifiedKey(accountID: account.id, window: .week, resetAt: week),
+        ] }
+        let relaunched = makeStore()
+        XCTAssertEqual(relaunched.notifiedKeys, Set([
+            NotifiedKey(accountID: account.id, window: .week, resetAt: week),
+        ]))
     }
 }
