@@ -15,6 +15,8 @@ struct AppConfig: Codable, Equatable {
     /// Notification keys already sent, per Account + Window/Credit identity + reset/renewal
     /// time; persisted so a restart doesn't repeat a notification.
     var alreadyNotified: Set<NotifiedKey>?
+    /// Global Notifications switch (General tab); nil means off (permission never requested).
+    var notificationsEnabled: Bool?
 
     init(accounts: [Account]? = nil, checkForUpdates: Bool? = nil) {
         self.accounts = accounts
@@ -22,7 +24,7 @@ struct AppConfig: Codable, Equatable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case accounts, checkForUpdates, readings, pollIntervalMinutes, alreadyNotified
+        case accounts, checkForUpdates, readings, pollIntervalMinutes, alreadyNotified, notificationsEnabled
     }
 
     init(from decoder: Decoder) throws {
@@ -32,6 +34,7 @@ struct AppConfig: Codable, Equatable {
         readings = try? c.decodeIfPresent([Lossy<Reading>].self, forKey: .readings)?.compactMap(\.value)
         pollIntervalMinutes = try? c.decodeIfPresent(Int.self, forKey: .pollIntervalMinutes)
         alreadyNotified = try? c.decodeIfPresent(Set<NotifiedKey>.self, forKey: .alreadyNotified)
+        notificationsEnabled = try? c.decodeIfPresent(Bool.self, forKey: .notificationsEnabled)
     }
 }
 

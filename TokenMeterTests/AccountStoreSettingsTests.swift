@@ -71,22 +71,20 @@ final class AccountStoreSettingsTests: XCTestCase {
         let store = makeStore()
         let account = Account(kind: .ollama, label: "A")
         store.add(account)
-        let past = date("2026-03-01T09:00:00Z")
-        let week = date("2026-10-25T09:00:00Z")
+        store.setNotificationsEnabled(true)
         let session = date("2026-10-18T17:00:00Z")
         store.record(.success(Reading(accountID: account.id, takenAt: now, quotas: [], credits: [])), for: account.id)
         store.decideNotifications(
             for: account, previous: store.readings[account.id],
             new: Reading(accountID: account.id, takenAt: now,
                          quotas: [Quota(window: Window(identity: .session, title: "Session", isMain: true,
-                                       resetsAt: session), percentUsed: 91),
-                                  Quota(window: Window(identity: .week, title: "Week", isMain: true,
-                                        resetsAt: week), percentUsed: 91)],
-                         credits: []),
-            notificationsEnabled: true)
+                                       resetsAt: session), percentUsed: 91)],
+                         credits: []))
         XCTAssertFalse(store.notifiedKeys.isEmpty, "the crossing's keys are persisted with the config")
 
         // Relaunch: the past key is pruned, the fresh one kept.
+        let past = date("2026-03-01T09:00:00Z")
+        let week = date("2026-10-25T09:00:00Z")
         config.update { $0.alreadyNotified = [
             NotifiedKey(accountID: account.id, window: .session, resetAt: past),
             NotifiedKey(accountID: account.id, window: .week, resetAt: week),

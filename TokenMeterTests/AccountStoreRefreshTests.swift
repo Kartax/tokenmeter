@@ -118,6 +118,79 @@ final class AccountStoreRefreshTests: XCTestCase {
         XCTAssertEqual(relaunched.displayState(of: account),
                        .ok(Reading(accountID: account.id, takenAt: clock, quotas: [], credits: [])))
     }
+
+    // MARK: - Notifications
+
+    /// Runs `body` while collecting the notifications `AccountStore` posts on `record`.
+    private func collecting(_ body: () async -> Void) async -> [OutgoingNotification] {
+        let box = NotificationBox()
+        let observer = NotificationCenter.default.addObserver(
+            forName: .tokenMeterNotification, object: nil, queue: nil) { note in
+            if let sent = note.object as? [OutgoingNotification] { box.append(sent) }
+        }
+        await body()
+        NotificationCenter.default.removeObserver(observer)
+        return box.sent
+    }
+
+    func testACrossingNotifiesOnceAndLaterPollsInThePeriodStaySilent() async {
+        let store = makeStore()
+        let account = addAccount(to: store, label: "Crossing")
+        store.setNotificationThreshold(.p90, for: account.id)
+        store.setNotificationsEnabled(true)
+        let resetsAt = clock + 5 * 3600
+
+        // First fetch below the threshold: nothing.
+        var sent = await collecting {
+            reader.respond(to: account.id, with: .success(Reading(
+                accountID: account.id, takenAt: clock,
+                quotas: [Quota(window: Window(identity: .session, title: "Session", isMain: true,
+                               resetsAt: resetsAt), percentUsed: 80)], credits: [])))
+            await store.refreshAll(.manual)
+        }
+        XCTAssertTrue(sent.isEmpty, "80% is below the 90% threshold")
+
+        // A crossing notifies exactly once.
+        clock += 120
+        sent = await collecting {
+            reader.respond(to: account.id, with: .success(Reading(
+                accountID: account.id, takenAt: clock,
+                quotas: [Quota(window: Window(identity: .session, title: "Session", isMain: true,
+                               resetsAt: resetsAt), percentUsed: 93)], credits: [])))
+            await store.refreshAll(.manual)
+        }
+        XCTAssertEqual(sent.count, 1)
+
+        // Later polls in the same reset period produce none.
+        clock += 120
+        sent = await collecting {
+            reader.respond(to: account.id, with: .success(Reading(
+                accountID: account.id, takenAt: clock,
+                quotas: [Quota(window: Window(identity: .session, title: "Session", isMain: true,
+                               resetsAt: resetsAt), percentUsed: 96)], credits: [])))
+            await store.refreshAll(.manual)
+        }
+        XCTAssertTrue(sent.isEmpty, "no repeat within the reset period")
+
+        // After the Window reset a new crossing notifies again.
+        clock += 6 * 3600
+        sent = await collecting {
+            reader.respond(to: account.id, with: .success(Reading(
+                accountID: account.id, takenAt: clock,
+                quotas: [Quota(window: Window(identity: .session, title: "Session", isMain: true,
+                               resetsAt: clock + 5 * 3600), percentUsed: 94)], credits: [])))
+            await store.refreshAll(.manual)
+        }
+        XCTAssertEqual(sent.count, 1, "a new reset period notifies again")
+    }
+}
+
+/// Thread-safe value box for NotificationCenter callbacks off the main actor.
+final class NotificationBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: [OutgoingNotification] = []
+    var sent: [OutgoingNotification] { lock.withLock { value } }
+    func append(_ items: [OutgoingNotification]) { lock.withLock { value += items } }
 }
 
 /// Answers each read with the scripted result for the Account (default: a Reading taken
