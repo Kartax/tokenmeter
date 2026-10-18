@@ -111,8 +111,7 @@ private struct AddAccountSheet: View {
             case .codex:
                 CodexAddAccountForm(store: store, onDone: onDone)
             case .nous:
-                Text("\(kind.displayName) is not supported yet.")
-                Button("Close") { onDone(nil) }
+                NousAddAccountForm(store: store, onDone: onDone)
             }
         }
         .padding(20)
@@ -168,7 +167,7 @@ private struct AccountDetailView: View {
             case .codex:
                 CodexAccountSettings(store: store, account: account)
             case .nous:
-                EmptyView()
+                NousAccountSettings(store: store, account: account)
             }
             HStack {
                 Spacer()
