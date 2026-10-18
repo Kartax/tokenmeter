@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>TokenMeter — AI subscription usage in your macOS menu bar</title>
+  <meta name="description" content="TokenMeter is a free macOS menu-bar app that shows, at a glance, how much of each AI subscription's usage allowance is left before it resets. Claude, Codex, Nous Portal and Ollama in one popover." />
+  <meta name="keywords" content="TokenMeter, macOS menu bar, Claude usage, Codex usage, Claude rate limits, AI subscription monitor, Ollama usage, Nous Portal, usage meter" />
+  <link rel="canonical" href="https://kartax.github.io/tokenmeter/" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0d0f12" />
+
+  <!-- Open Graph (link previews on Facebook, Discord, Slack, …) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="TokenMeter" />
+  <meta property="og:title" content="TokenMeter — AI subscription usage in your macOS menu bar" />
+  <meta property="og:description" content="A free macOS menu-bar app that shows, at a glance, how much of each AI subscription's usage allowance is left before it resets." />
+  <meta property="og:url" content="https://kartax.github.io/tokenmeter/" />
+  <meta property="og:image" content="https://kartax.github.io/tokenmeter/popover.png" />
+  <meta property="og:image:alt" content="TokenMeter's menu-bar popover showing usage windows and credit balances for several AI accounts" />
+
+  <!-- Twitter / X card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="TokenMeter — AI subscription usage in your macOS menu bar" />
+  <meta name="twitter:description" content="A free macOS menu-bar app that shows, at a glance, how much of each AI subscription's usage allowance is left before it resets." />
+  <meta name="twitter:image" content="https://kartax.github.io/tokenmeter/popover.png" />
+
+  <link rel="icon" type="image/png" href="logo.png" />
+
+  <!-- Structured data: the app itself (helps Google show a rich result) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "TokenMeter",
+    "operatingSystem": "macOS 14.0 or later",
+    "applicationCategory": "UtilitiesApplication",
+    "description": "A macOS menu-bar app that shows, at a glance, how much of each AI subscription's usage allowance is left before it resets.",
+    "url": "https://kartax.github.io/tokenmeter/",
+    "downloadUrl": "https://github.com/Kartax/tokenmeter/releases/latest/download/TokenMeter.dmg",
+    "image": "https://kartax.github.io/tokenmeter/logo@2x.png",
+    "softwareRequirements": "macOS 14.0 or later",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #0d0f12;
+      --bg-soft: #11141a;
+      --panel: #15181d;
+      --border: #262b33;
+      --text: #e6e8ea;
+      --muted: #9aa1ab;
+      --accent: #4c8dff;
+      --warn: #ffb454;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; padding: 0 20px;
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+    }
+    .wrap { max-width: 860px; margin: 0 auto; }
+    a { color: var(--accent); }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      border-radius: 6px; padding: 1px 6px; font-size: .88em;
+    }
+
+    /* Header */
+    header { text-align: center; padding: 56px 0 40px; }
+    .icon { border-radius: 22%; }
+    h1 { margin: 16px 0 4px; font-size: 2rem; }
+    .tagline { color: var(--muted); max-width: 620px; margin: 8px auto 0; }
+    .badges { margin-top: 12px; }
+    .badges img { margin: 0 3px; }
+    .btn-group { margin-top: 24px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-block; padding: 12px 26px; border-radius: 10px;
+      font-weight: 600; text-decoration: none; font-size: 1rem;
+      transition: filter .15s ease;
+    }
+    .btn:hover { filter: brightness(1.12); }
+    .btn-download { background: var(--accent); color: #fff; }
+    .btn-gh { border: 1px solid var(--border); color: var(--text); background: var(--panel); }
+
+    .norelease {
+      margin: 14px auto 0; max-width: 560px;
+      color: var(--warn); font-size: .88rem;
+      background: rgba(255, 180, 84, .08); border: 1px solid rgba(255, 180, 84, .3);
+      border-radius: 10px; padding: 8px 14px;
+    }
+
+    /* Homebrew */
+    .brew-install { margin-top: 20px; color: var(--muted); font-size: .9rem; }
+    .brew-install-label { display: block; margin-bottom: 6px; }
+    .brew-command {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 12px 10px 16px; max-width: 100%;
+    }
+    .brew-command code {
+      background: none; border: none; padding: 0; font-size: .92rem;
+      white-space: nowrap; overflow-x: auto; max-width: 60vw;
+    }
+    .copy-command {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 7px; border: none;
+      background: none; color: var(--muted); cursor: pointer; flex: none;
+    }
+    .copy-command:hover { color: var(--text); background: rgba(255, 255, 255, .05); }
+    .copy-command:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+    .copy-command svg { width: 18px; height: 18px; }
+    .copy-command .check-icon { display: none; }
+    .copy-command.copied { color: var(--accent); }
+    .copy-command.copied .copy-icon { display: none; }
+    .copy-command.copied .check-icon { display: block; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; margin: -1px;
+      overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; padding: 0;
+    }
+
+    /* Sections */
+    section { padding: 28px 0; }
+    h2 { font-size: 1.35rem; margin: 0 0 10px; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: center; }
+    @media (max-width: 680px) { .split { grid-template-columns: 1fr; gap: 20px; } }
+    .shot {
+      display: block; width: 100%; height: auto; max-width: 100%;
+      border: 1px solid var(--border); border-radius: 12px;
+      background: var(--bg-soft);
+    }
+    .caption { color: var(--muted); font-size: .85rem; text-align: center; margin: 10px 0 0; }
+    .lede { color: var(--muted); margin: 0; }
+
+    /* Providers table */
+    .tablewrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
+    td .why { color: var(--muted); font-size: .85rem; display: block; }
+
+    /* Privacy */
+    .panel {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 22px; color: var(--muted);
+    }
+    .panel ul { margin: 8px 0 0; padding-left: 20px; }
+    .panel li { margin: 6px 0; }
+
+    footer { color: var(--muted); font-size: .85rem; text-align: center; padding: 56px 0 72px; }
+    footer a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img class="icon" src="logo.png" srcset="logo.png 1x, logo@2x.png 2x"
+           alt="TokenMeter app icon" width="104" height="104" />
+      <h1>TokenMeter</h1>
+      <p class="tagline">
+        How much of your AI subscriptions' usage is left,<br/>
+        right in the macOS menu bar.
+      </p>
+      <div class="btn-group">
+        <a class="btn btn-download" href="https://github.com/Kartax/tokenmeter/releases/latest/download/TokenMeter.dmg">
+          Download for macOS
+        </a>
+        <a class="btn btn-gh" href="https://github.com/Kartax/tokenmeter">
+          View source
+        </a>
+      </div>
+      <p class="norelease" id="norelease-note">
+        No release has been published yet — the download button will start working
+        as soon as <code>TokenMeter.dmg</code> ships with the next release.
+      </p>
+      <div class="brew-install">
+        <span class="brew-install-label">Or install with Homebrew</span>
+        <div class="brew-command">
+          <code id="brew-command">brew install --cask kartax/tap/tokenmeter</code>
+          <button class="copy-command" type="button" aria-label="Copy Homebrew install command"
+                  title="Copy command" aria-describedby="copy-status">
+            <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect width="14" height="14" x="8" y="8" rx="2" />
+              <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+            </svg>
+            <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+          </button>
+        </div>
+        <span class="sr-only" id="copy-status" role="status" aria-live="polite"></span>
+      </div>
+      <div class="gh-links" style="margin-top:18px; font-size:.9rem;">
+        <a href="https://github.com/Kartax/tokenmeter/issues/new">Report an issue</a>
+        <span style="color:var(--muted)"> · </span>
+        <a href="https://github.com/Kartax/tokenmeter/releases">All releases</a>
+      </div>
+    </header>
+
+    <section>
+      <div class="split">
+        <div>
+          <img class="shot" src="popover.png" width="333" height="167" loading="lazy"
+               alt="TokenMeter's popover showing usage windows, reset times and credit balances for several AI accounts" />
+          <p class="caption">The popover: every window and credit balance, refreshed automatically.</p>
+        </div>
+        <div>
+          <h2>Usage at a glance</h2>
+          <p class="lede">
+            Click the menu-bar icon and see the usage windows and credit balances of
+            all your AI accounts in one place. Each account shows how much of every
+            window's limit you have used and when it resets ("in 2 h 14 m", or the
+            date), plus remaining credits where the provider meters by money.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="split">
+        <div>
+          <h2>Set it up once</h2>
+          <p class="lede">
+            Add an account per provider and TokenMeter keeps all readings fresh in the
+            background, with sensible back-off when a provider rate-limits you. Show or
+            hide secondary windows (a whole week, a billing month, a scoped session)
+            per account, and get a notification before a window runs out.
+          </p>
+        </div>
+        <div>
+          <img class="shot" src="settings.png" width="496" height="368" loading="lazy"
+               alt="TokenMeter's Settings window with an Ollama Cloud account selected (Plan Ultra, signed in as a masked address, status OK)" />
+          <p class="caption">Settings: your accounts, add more, sign in, or remove.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="providers">
+      <h2>Providers and authentication</h2>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>Provider</th><th>How it authenticates</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Claude</strong></td>
+              <td>
+                Borrows the login of <a href="https://claude.com/product/claude-code">Claude Code</a>, the official CLI.
+                <span class="why">TokenMeter has no Claude sign-in of its own and never stores or refreshes Claude tokens — see <a href="https://github.com/Kartax/tokenmeter/blob/main/docs/adr/0001-claude-credentials-borrowed-from-claude-code.md">ADR 0001</a>.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Codex</strong></td>
+              <td>
+                Sign-in inside TokenMeter (device-code browser flow).
+                <span class="why">One click in Settings' "+" menu, then approve in the browser — see <a href="https://github.com/Kartax/tokenmeter/blob/main/docs/adr/0003-own-device-code-oauth-for-codex-and-nous.md">ADR 0003</a>.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Nous Portal</strong></td>
+              <td>
+                Sign-in inside TokenMeter (device-code browser flow).
+                <span class="why">Same flow as Codex; tokens are stored and rotated in the Keychain.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Ollama Cloud</strong></td>
+              <td>
+                API key, pasted in Settings.
+                <span class="why">Create a key on your Ollama dashboard and add it as an account.</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="privacy">
+      <h2>Privacy</h2>
+      <div class="panel">
+        <p style="margin:0;">TokenMeter talks only to the providers you configure, and:</p>
+        <ul>
+          <li>Secrets never leave your Mac — provider tokens and API keys live only in the macOS <strong>Keychain</strong>, never in a settings file.</li>
+          <li><strong>Claude tokens are never stored</strong>: they are read from Claude Code at fetch time, used once, and discarded.</li>
+          <li><strong>No telemetry</strong>, no analytics, no update phone-home you can't turn off.</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      <p>
+        TokenMeter is free, open-source software under the
+        <a href="https://github.com/Kartax/tokenmeter/blob/main/LICENSE">LICENSE</a>.<br/>
+        Made by <a href="https://github.com/Kartax">@Kartax</a> ·
+        <a href="https://github.com/Kartax/tokenmeter/issues/new">Report an issue</a>
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    (() => {
+      const button = document.querySelector(".copy-command");
+      const command = document.getElementById("brew-command");
+      const status = document.getElementById("copy-status");
+      if (!button || !command || !status) return;
+      let resetTimer;
+      button.addEventListener("click", async () => {
+        const text = command.textContent.trim();
+        let ok = false;
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            ok = true;
+          } else {
+            // Fallback for non-secure contexts (e.g. local file preview)
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            ok = document.execCommand("copy");
+            ta.remove();
+          }
+        } catch (_) { /* fall through */ }
+        if (ok) {
+          button.classList.add("copied");
+          status.textContent = "Command copied";
+          clearTimeout(resetTimer);
+          resetTimer = setTimeout(() => {
+            button.classList.remove("copied");
+            status.textContent = "";
+          }, 2000);
+        } else {
+          status.textContent = "Copy failed — select the command and copy manually";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
