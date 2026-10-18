@@ -78,6 +78,7 @@ final class AccountStore {
         try readerFor(account.kind)?.deleteSecrets(for: account)
         readings[id] = nil
         failures[id] = .loginExpired(hint: hint)
+        persist()
         coreLog.info("Signed out Account \(id, privacy: .public)")
     }
 

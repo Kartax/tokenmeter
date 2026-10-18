@@ -17,6 +17,7 @@ final class AccountStoreSignOutTests: XCTestCase {
     }
 
     func testSignOutDeletesTokensAndKeepsTheAccountSignedOut() throws {
+        try? FileManager.default.removeItem(at: URL(fileURLWithPath: "/tmp/ticket5/store-test-config.json"))
         let source = MemorySource(CodexCredentials(accessToken: jwt(["exp": 4102444800]),
                                                    refreshToken: "refresh", idToken: jwt(["email": "user@example.com"])))
         let store = AccountStore(config: ConfigStore(url: URL(fileURLWithPath: "/tmp/ticket5/store-test-config.json")),
