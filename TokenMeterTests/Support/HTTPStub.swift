@@ -12,6 +12,9 @@ import Foundation
 /// Routes are keyed by "METHOD path" (no query). An unrouted request fails with
 /// `URLError(.unsupportedURL)`. Tests in this bundle run serially, so the routes are global;
 /// each `session(_:)` call replaces them and clears the recorded requests.
+///
+/// `session(sequences:)` answers successive requests to one route with successive responses
+/// (the last one repeats), e.g. `["GET /usage": [.status(401), .json("{…}")]]`.
 final class HTTPStub: URLProtocol {
     struct Response {
         var status: Int
@@ -35,11 +38,16 @@ final class HTTPStub: URLProtocol {
     }
 
     private static let lock = NSLock()
-    nonisolated(unsafe) private static var routes: [String: Response] = [:]
+    nonisolated(unsafe) private static var routes: [String: [Response]] = [:]
     nonisolated(unsafe) private static var recorded: [URLRequest] = []
 
     /// A session whose requests are answered from `routes`.
     static func session(_ routes: [String: Response]) -> URLSession {
+        session(sequences: routes.mapValues { [$0] })
+    }
+
+    /// A session answering each route's requests with its responses in order; the last repeats.
+    static func session(sequences routes: [String: [Response]]) -> URLSession {
         lock.withLock {
             self.routes = routes
             recorded = []
@@ -75,7 +83,12 @@ final class HTTPStub: URLProtocol {
         let key = "\(request.httpMethod ?? "GET") \(request.url?.path ?? "")"
         let response: Response? = Self.lock.withLock {
             Self.recorded.append(request)
-            return Self.routes[key]
+            guard var queue = Self.routes[key], let first = queue.first else { return nil }
+            if queue.count > 1 {
+                queue.removeFirst()
+                Self.routes[key] = queue
+            }
+            return first
         }
         guard let response, let url = request.url,
               let http = HTTPURLResponse(url: url, statusCode: response.status, httpVersion: "HTTP/1.1",

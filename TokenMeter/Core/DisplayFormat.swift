@@ -33,9 +33,14 @@ struct DisplayFormat {
         return line
     }
 
-    /// Whole amounts without decimals ("$60"), others with two ("$41.20").
+    /// Whole amounts without decimals ("$60"), others with two ("$41.20"); Provider credits are
+    /// counted, not priced ("14.50 credits").
     func money(_ amount: Decimal, currency: String) -> String {
         let isWhole = amount == amount.rounded(scale: 0)
+        if currency == CreditBalance.creditsUnit {
+            return amount.formatted(.number.precision(.fractionLength(isWhole ? 0 : 2))
+                .locale(Locale(identifier: "en_US"))) + " credits"
+        }
         return amount.formatted(.currency(code: currency)
             .precision(.fractionLength(isWhole ? 0 : 2))
             .locale(Locale(identifier: "en_US")))

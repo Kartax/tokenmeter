@@ -24,7 +24,7 @@ struct AppConfig: Codable, Equatable {
 }
 
 /// Decodes an element or yields nil instead of failing the whole array.
-private struct Lossy<Value: Decodable>: Decodable {
+struct Lossy<Value: Decodable>: Decodable {
     let value: Value?
     init(from decoder: Decoder) throws { value = try? Value(from: decoder) }
 }

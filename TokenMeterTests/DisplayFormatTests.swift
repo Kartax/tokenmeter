@@ -37,4 +37,10 @@ final class DisplayFormatTests: XCTestCase {
                                     allowance: nil, currency: "USD", renewsAt: nil, isMain: false)
         XCTAssertEqual(format.creditLine(balance, now: now), "$25 left")
     }
+
+    func testNonMonetaryCreditsAreCountedNotPriced() {
+        let balance = CreditBalance(id: "credits", title: "Credits", remaining: Decimal(string: "14.5")!,
+                                    allowance: nil, currency: CreditBalance.creditsUnit, renewsAt: nil, isMain: false)
+        XCTAssertEqual(format.creditLine(balance, now: now), "14.50 credits left")
+    }
 }

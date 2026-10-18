@@ -9,6 +9,21 @@ protocol Provider: Sendable {
 
     func read(account: Account, credentials: Credentials, session: URLSession, now: Date) async
         -> ProviderReading<Credentials>
+
+    /// Like `read`, but rotated credentials are handed to `persist` *before* they are used, so a
+    /// single-use refresh token is never lost (Codex, Nous). Still returns them in the result.
+    func read(account: Account, credentials: Credentials, session: URLSession, now: Date,
+              persist: @Sendable (Credentials) -> Void) async -> ProviderReading<Credentials>
+}
+
+extension Provider {
+    /// Providers whose credentials don't rotate: persist whatever `read` returned, afterwards.
+    func read(account: Account, credentials: Credentials, session: URLSession, now: Date,
+              persist: @Sendable (Credentials) -> Void) async -> ProviderReading<Credentials> {
+        let result = await read(account: account, credentials: credentials, session: session, now: now)
+        if let rotated = result.rotatedCredentials { persist(rotated) }
+        return result
+    }
 }
 
 /// Result of one `Provider.read`; `rotatedCredentials` is set when a token refresh rotated them,
@@ -42,7 +57,7 @@ protocol AccountReader: Sendable {
     func deleteSecrets(for account: Account) throws
 }
 
-/// Loads credentials, calls the Provider, and saves rotated credentials.
+/// Loads credentials, calls the Provider, and saves rotated credentials before they are used.
 struct CredentialedReader<P: Provider, S: CredentialSource>: AccountReader
 where P.Credentials == S.Credentials {
     let provider: P
@@ -54,8 +69,8 @@ where P.Credentials == S.Credentials {
         case .success(let loaded): credentials = loaded
         case .failure(let failure): return .failure(failure)
         }
-        let result = await provider.read(account: account, credentials: credentials, session: session, now: now)
-        if let rotated = result.rotatedCredentials {
+        let source = source
+        let result = await provider.read(account: account, credentials: credentials, session: session, now: now) { rotated in
             do {
                 try source.save(rotated, for: account)
             } catch {

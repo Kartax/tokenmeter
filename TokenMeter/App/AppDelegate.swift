@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var popover: NSPopover!
     private var settingsWindow: NSWindow?
     private let store = AccountStore()
+    private let router = SettingsRouter()
 
     /// Static gauge icon; a template image so the system tints it for light/dark menu bars.
     private static let icon: NSImage? = {
@@ -18,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        router.showWindow = { [weak self] in self?.openSettings() }
         setupStatusItem()
         UpdateChecker.shared.start()
         appLog.info("TokenMeter launched")
@@ -48,7 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             store: store,
             onOpenSettings: { [weak self] in self?.openSettings() },
             onQuit: { NSApplication.shared.terminate(nil) }
-        ))
+        ).environment(router))
         self.popover = popover
     }
 
@@ -73,7 +75,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func showSettings() {
         NSApp.activate(ignoringOtherApps: true)
         if settingsWindow == nil {
-            let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView(store: store)))
+            let window = NSWindow(contentViewController: NSHostingController(
+                rootView: SettingsView(store: store).environment(router)))
             window.title = "TokenMeter Settings"
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
