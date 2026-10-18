@@ -35,6 +35,7 @@ set -euo pipefail
 PROJECT="TokenMeter.xcodeproj"
 SCHEME="TokenMeter"
 APP_NAME="TokenMeter"
+TEAM_ID="8HAG9JU2ZK"   # must match ExportOptions.plist and project.yml
 NOTARY_PROFILE="${NOTARY_PROFILE:-NOTARY}"
 # This same repo hosts the download page (docs/ via Pages) and release binaries.
 PUBLISH_REPO="${PUBLISH_REPO:-Kartax/tokenmeter}"
@@ -120,6 +121,15 @@ command -v create-dmg >/dev/null 2>&1 || {
   exit 1
 }
 
+# The .dmg itself is signed with the team's Developer ID Application identity
+# (the app inside is signed by the export), so `spctl -t open` accepts it.
+SIGN_IDENTITY="$(security find-identity -v -p codesigning \
+  | awk -v team="($TEAM_ID)" '/"Developer ID Application: / && index($0, team) { print $2; exit }')"
+if [[ -z "$SIGN_IDENTITY" ]]; then
+  echo "!! No 'Developer ID Application' identity for team $TEAM_ID in the keychain." >&2
+  exit 1
+fi
+
 # --- 0. regenerate project (source list lives in pbxproj) ------------------
 if command -v xcodegen >/dev/null 2>&1; then
   echo "==> xcodegen generate"
@@ -188,6 +198,10 @@ create-dmg \
   --hide-extension "$APP_NAME.app" \
   --app-drop-link 495 205 \
   "$DMG" "$DMG_STAGE"
+
+echo "==> Signing DMG"
+codesign --force --timestamp --sign "$SIGN_IDENTITY" "$DMG"
+codesign --verify --strict --verbose=2 "$DMG"
 
 # --- 4. notarize + staple --------------------------------------------------
 echo "==> Submitting for notarization (this can take a few minutes)"
