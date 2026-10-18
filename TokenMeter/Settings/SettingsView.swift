@@ -8,7 +8,7 @@ struct SettingsView: View {
         TabView {
             AccountsSettingsView(store: store)
                 .tabItem { Label("Accounts", systemImage: "person.crop.circle") }
-            GeneralSettingsView()
+            GeneralSettingsView(store: store)
                 .tabItem { Label("General", systemImage: "gearshape") }
         }
         .padding()
@@ -17,8 +17,17 @@ struct SettingsView: View {
 }
 
 struct GeneralSettingsView: View {
+    @Bindable var store: AccountStore
+
     var body: some View {
         Form {
+            Section {
+                Picker("Refresh every", selection: $store.pollIntervalMinutes) {
+                    ForEach(AccountStore.pollIntervals, id: \.self) { minutes in
+                        Text(minutes == 1 ? "1 minute" : "\(minutes) minutes").tag(minutes)
+                    }
+                }
+            }
             AppBehaviourSection()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

@@ -45,7 +45,7 @@ private struct PopoverFooter: View {
                 }
             }
             Button {
-                Task { await store.refreshAll() }
+                Task { await store.refreshAll(.manual) }
             } label: {
                 Image(systemName: "arrow.clockwise")
             }

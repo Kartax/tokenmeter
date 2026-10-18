@@ -21,7 +21,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupStatusItem()
         UpdateChecker.shared.start()
         appLog.info("TokenMeter launched")
-        Task { await store.refreshAll() }
+        Task { await store.refreshAll(.launch) }
+        store.startPolling()
     }
 
     /// Keep the app alive when the Settings window is closed (it's a menu bar app).
@@ -60,6 +61,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             popover.show(relativeTo: sender.bounds, of: sender, preferredEdge: .minY)
             popover.contentViewController?.view.window?.makeKey()
             appLog.debug("Popover opened")
+            Task { await store.refreshAll(.popoverOpened) }
         }
     }
 

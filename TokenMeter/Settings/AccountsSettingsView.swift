@@ -14,6 +14,7 @@ struct AccountsSettingsView: View {
                         AccountListRow(account: account, state: store.displayState(of: account))
                             .tag(account.id)
                     }
+                    .onMove { store.move(fromOffsets: $0, toOffset: $1) }
                 }
                 .overlay {
                     if store.accounts.isEmpty {
@@ -140,6 +141,11 @@ private struct AccountDetailView: View {
                         .lineLimit(2)
                         .multilineTextAlignment(.trailing)
                 }
+            }
+            Toggle(isOn: Binding(get: { account.showAllWindows },
+                                 set: { store.setShowAllWindows($0, for: account.id) })) {
+                Text("Show all Windows")
+                Text("Also show model-scoped Windows and extra Credit balances in the popover.")
             }
             switch account.kind {
             case .ollama:
