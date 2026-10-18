@@ -52,6 +52,12 @@ enum HTTP {
         return candidates.lazy.compactMap { $0 as? String }.first { !$0.isEmpty }
     }
 
+    /// True when `data` parses as any JSON value (used to tell OAuth error bodies from e.g. a
+    /// non-JSON Vercel security-checkpoint page, which backs off instead of failing the grant).
+    static func isJSON(_ data: Data) -> Bool {
+        (try? JSONSerialization.jsonObject(with: data)) != nil
+    }
+
     /// An `application/x-www-form-urlencoded` body (RFC 3986 unreserved characters kept, all else escaped).
     static func formBody(_ fields: [(String, String)]) -> Data {
         var unreserved = CharacterSet.alphanumerics
