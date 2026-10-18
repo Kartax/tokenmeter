@@ -16,7 +16,8 @@ enum ProviderRegistry {
             CredentialedReader(provider: CodexProvider.live,
                                source: CodexProvider.credentialSource)
         case .nous:
-            nil
+            CredentialedReader(provider: NousProvider.live,
+                               source: NousProvider.credentialSource)
         }
     }
 

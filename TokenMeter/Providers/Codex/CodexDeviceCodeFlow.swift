@@ -140,7 +140,8 @@ struct CodexDeviceCodeFlow: DeviceCodeFlow {
     }
 }
 
-private extension ReadingFailure {
+extension ReadingFailure {
+    /// One short line for sign-in failures (device-code sheets and their providers).
     var message: String {
         switch self {
         case .loginExpired(let hint): hint

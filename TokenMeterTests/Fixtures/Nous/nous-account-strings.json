@@ -1,0 +1,7 @@
+{
+  "user": {"email": "user@example.com"},
+  "organisation": null,
+  "subscription": {"plan": "Starter", "monthly_credits": "22", "credits_remaining": "4.50",
+                   "current_period_end": "2026-11-12T04:29:00.000Z"},
+  "purchased_credits_remaining": "3.25"
+}
