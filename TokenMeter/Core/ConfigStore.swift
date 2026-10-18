@@ -33,7 +33,7 @@ struct AppConfig: Codable, Equatable {
         checkForUpdates = try? c.decodeIfPresent(Bool.self, forKey: .checkForUpdates)
         readings = try? c.decodeIfPresent([Lossy<Reading>].self, forKey: .readings)?.compactMap(\.value)
         pollIntervalMinutes = try? c.decodeIfPresent(Int.self, forKey: .pollIntervalMinutes)
-        alreadyNotified = try? c.decodeIfPresent(Set<NotifiedKey>.self, forKey: .alreadyNotified)
+        alreadyNotified = try? c.decodeIfPresent([NotifiedKey].self, forKey: .alreadyNotified).map(Set.init)
         notificationsEnabled = try? c.decodeIfPresent(Bool.self, forKey: .notificationsEnabled)
     }
 }

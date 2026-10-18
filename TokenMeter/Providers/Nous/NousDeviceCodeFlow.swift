@@ -119,10 +119,6 @@ struct NousDeviceCodeFlow: DeviceCodeFlow {
         return request
     }
 
-    private static func isJSON(_ data: Data) -> Bool {
-        (try? JSONSerialization.jsonObject(with: data)) != nil
-    }
-
     private struct DeviceCodeResponse: Decodable {
         var device_code: String?
         var user_code: String?

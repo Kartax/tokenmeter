@@ -80,8 +80,10 @@ final class NousProviderTests: XCTestCase {
     func testMissingCreditsRemainingIsNotZero() async throws {
         let reading = try await reading(.fixture("nous-account-missing"))
 
-        XCTAssertEqual(reading.credits.count, 1, "A missing monthly amount is omitted, not treated as zero")
-        XCTAssertEqual(reading.credits.first?.remaining, Decimal(0))
+        // The purchased amount is absent from the response: no "purchased" balance at all, not a
+        // zero one; the monthly balance is mapped when its remaining amount is present.
+        XCTAssertEqual(reading.credits.map(\.id), ["monthly"])
+        XCTAssertFalse(reading.credits.contains { $0.id == "purchased" })
     }
 
     func testRolloverKeepsTheBalanceButNoPercent() async throws {

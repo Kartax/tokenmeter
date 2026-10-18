@@ -31,6 +31,16 @@ enum NotificationThreshold: String, Codable, CaseIterable, Sendable {
     case off, p80 = "80", p90 = "90", p95 = "95"
 
     static let `default` = NotificationThreshold.p90
+
+    /// The threshold as percent used; `off` has none.
+    var percent: Double? {
+        switch self {
+        case .off: nil
+        case .p80: 80
+        case .p90: 90
+        case .p95: 95
+        }
+    }
 }
 
 /// One configured login at a Provider. Non-secret; persisted in the config file.

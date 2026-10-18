@@ -18,23 +18,56 @@ struct AccountNotificationSettings: Equatable, Sendable {
 /// balance's key: Account + balance identity + its renewal time. Reset times can be nil.
 struct NotifiedKey: Hashable, Codable, Sendable {
     var accountID: UUID
-    var window: WindowIdentity?
-    var credit: String?
-    var resetAt: Date?
 
-    init(accountID: UUID, window: WindowIdentity?, credit: String?, resetAt: Date?) {
-        self.accountID = accountID
-        self.window = window
-        self.credit = credit
-        self.resetAt = resetAt
+    /// What the key covers, with that subject's period's end. A Window's key: Window identity +
+    /// its reset time; a Credit balance's key: balance identity + its renewal time.
+    enum Subject: Hashable, Sendable {
+        case window(WindowIdentity, resetAt: Date?)
+        case credit(String, renewsAt: Date?)
     }
 
+    var subject: Subject
+
     init(accountID: UUID, window: WindowIdentity, resetAt: Date?) {
-        self.init(accountID: accountID, window: window, credit: nil, resetAt: resetAt)
+        self.accountID = accountID
+        self.subject = .window(window, resetAt: resetAt)
     }
 
     init(accountID: UUID, credit: String, renewsAt: Date?) {
-        self.init(accountID: accountID, window: nil, credit: credit, resetAt: renewsAt)
+        self.accountID = accountID
+        self.subject = .credit(credit, renewsAt: renewsAt)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case accountID, window, credit, resetAt
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(accountID, forKey: .accountID)
+        switch subject {
+        case .window(let identity, let resetAt):
+            try c.encode(identity, forKey: .window)
+            try c.encodeIfPresent(resetAt, forKey: .resetAt)
+        case .credit(let id, let renewsAt):
+            try c.encode(id, forKey: .credit)
+            try c.encodeIfPresent(renewsAt, forKey: .resetAt)
+        }
+    }
+
+    /// Decodes the subject from a Window identity or a Credit identity, keeping the config's
+    /// already-notified keys decodable across launches.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        accountID = try c.decode(UUID.self, forKey: .accountID)
+        if let window = try? c.decodeIfPresent(WindowIdentity.self, forKey: .window) {
+            subject = .window(window, resetAt: try c.decodeIfPresent(Date.self, forKey: .resetAt))
+        } else if let credit = try c.decodeIfPresent(String.self, forKey: .credit) {
+            subject = .credit(credit, renewsAt: try c.decodeIfPresent(Date.self, forKey: .resetAt))
+        } else {
+            throw DecodingError.dataCorrupted(DecodingError.Context(
+                codingPath: c.codingPath, debugDescription: "NotifiedKey without a Window or Credit subject"))
+        }
     }
 }
 
@@ -48,8 +81,11 @@ struct NotifiedKeySet: Equatable, Sendable {
 
     /// Keys whose reset (or renewal) time has already passed are stale.
     private static func isStale(_ key: NotifiedKey, now: Date) -> Bool {
-        guard let resetAt = key.resetAt else { return false }
-        return resetAt <= now
+        switch key.subject {
+        case .window(_, let resetAt), .credit(_, let resetAt):
+            guard let resetAt else { return false }
+            return resetAt <= now
+        }
     }
 
     /// The set without keys that are no longer active (the Window reset or the balance
@@ -66,9 +102,9 @@ struct OutgoingNotification: Equatable, Identifiable, Sendable {
 
     /// Stable within the reset period: the key's identity.
     var id: String {
-        switch key.window {
-        case .some(let window): "\(key.accountID)-\(window)-\(key.resetAt ?? .distantPast)"
-        case .none: "\(key.accountID)-credit-\(key.credit ?? "")-\(key.resetAt ?? .distantPast)"
+        switch key.subject {
+        case .window(let window, let resetAt): "\(key.accountID)-\(window)-\(resetAt ?? .distantPast)"
+        case .credit(let credit, let renewsAt): "\(key.accountID)-credit-\(credit)-\(renewsAt ?? .distantPast)"
         }
     }
 
@@ -88,25 +124,28 @@ enum NotificationDecision {
     static let creditNoticeFraction: Decimal = 0.1
     static let creditNoticePercent = 10
 
-    static func decide(previous: Reading?, new: Reading, account: Account,
+    static func decide(new: Reading, account: Account,
                        settings: AccountNotificationSettings, notificationsEnabled: Bool,
                        notified: NotifiedKeySet, now: Date)
         -> (notifications: [OutgoingNotification], notified: NotifiedKeySet) {
-        // The global switch and the Account threshold both silence everything.
+        // The global switch and the Account threshold both silence everything; the set stays
+        // intact so re-enabling can't re-fire within the same reset periods.
         guard notificationsEnabled, settings.threshold != .off else {
-            return ([], NotifiedKeySet(keys: []))
+            return ([], notified)
         }
 
         let visible: (Quota) -> Bool = { settings.showAllWindows || $0.window.isMain }
+        let creditVisible: (CreditBalance) -> Bool = { settings.showAllWindows || $0.isMain }
         let updatedInput = notified.pruned(now: now)
         let result = notifications(
-            previous: previous, new: new, visible: visible, threshold: settings.threshold,
+            new: new, visible: visible, creditVisible: creditVisible, threshold: settings.threshold,
             accountID: account.id, notifiedKeys: updatedInput.keys, now: now)
         let updated = NotifiedKeySet(keys: result.keys)
         return (result.notifications, updated)
     }
 
-    private static func notifications(previous: Reading?, new: Reading, visible: (Quota) -> Bool,
+    private static func notifications(new: Reading, visible: (Quota) -> Bool,
+                                      creditVisible: (CreditBalance) -> Bool,
                                       threshold: NotificationThreshold, accountID: UUID,
                                       notifiedKeys: Set<NotifiedKey>, now: Date)
         -> (notifications: [OutgoingNotification], keys: Set<NotifiedKey>) {
@@ -115,7 +154,7 @@ enum NotificationDecision {
 
         // Quotas: one notification per Window per reset period, at the Account's threshold.
         // A without-reset-time Window would repeat forever; never notify such a Window.
-        let thresholdPercent = Double(threshold.rawValue) ?? 90
+        guard let thresholdPercent = threshold.percent else { return ([], keys) }
         for quota in new.quotas {
             guard visible(quota), let resetsAt = quota.window.resetsAt else { continue }
             let key = NotifiedKey(accountID: accountID, window: quota.window.identity, resetAt: resetsAt)
@@ -130,7 +169,7 @@ enum NotificationDecision {
         // Credits: one notification per balance per renewal period, below 10% remaining of a
         // known allowance.
         for credit in new.credits {
-            guard let allowance = credit.allowance else { continue }
+            guard creditVisible(credit), let allowance = credit.allowance else { continue }
             let remaining = credit.remaining
             // Rollover credits (remaining > the monthly allowance) don't notify.
             guard remaining <= allowance else { continue }

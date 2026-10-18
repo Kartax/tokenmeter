@@ -25,7 +25,9 @@ final class AccountStore {
     private var restored: Set<UUID> = []
     /// End of each rate-limited Account's back-off; refreshes skip the Account until then.
     @ObservationIgnored private var backOffUntil: [UUID: Date] = [:]
-    /// Notification keys already sent and not reset yet (seam B's already-notified set).
+    /// Notification keys already sent (seam B's already-notified set). A silenced decision
+    /// (global switch off, or the Account threshold off) keeps the keys, so re-enabling cannot
+    /// re-fire within the same reset periods; keys whose period has reset are pruned on load.
     private(set) var notifiedKeys: Set<NotifiedKey> = []
 
     /// Poll intervals offered in General, in minutes.
@@ -148,9 +150,9 @@ final class AccountStore {
         readings[id] = nil
         failures[id] = nil
         backOffUntil[id] = nil
-        let removedCount = notifiedKeys.filter { $0.accountID == id }.count
-        if removedCount > 0 {
-            notifiedKeys.subtract(notifiedKeys.filter { $0.accountID == id })
+        let removed = notifiedKeys.filter { $0.accountID == id }
+        if !removed.isEmpty {
+            notifiedKeys.subtract(removed)
             config.update { $0.alreadyNotified = notifiedKeys }
         }
         persist()
@@ -178,7 +180,7 @@ final class AccountStore {
         switch result {
         case .success(let reading):
             if let account = accounts.first(where: { $0.id == id }) {
-                decideNotifications(for: account, previous: readings[id], new: reading)
+                decideNotifications(for: account, new: reading)
             }
             readings[id] = reading
             restored.remove(id)
@@ -203,10 +205,6 @@ final class AccountStore {
             guard notificationsEnabled != oldValue else { return }
             config.update { $0.notificationsEnabled = notificationsEnabled }
             coreLog.info("Notifications \(self.notificationsEnabled ? "enabled" : "disabled", privacy: .public)")
-            if !notificationsEnabled {
-                // Silenced notifications must not re-fire on re-enable within the same periods;
-                // the keys of already-sent notifications stay (see `NotificationDecision`).
-            }
             NotificationCenter.default.post(name: .tokenMeterNotificationsSwitch, object: nil,
                                             userInfo: ["enabled": notificationsEnabled])
         }
@@ -229,9 +227,9 @@ final class AccountStore {
 
     /// Applies the notification decision to one Account's fresh Reading: posts what it returns
     /// and persists the updated already-notified set with the config.
-    func decideNotifications(for account: Account, previous: Reading?, new: Reading) {
+    func decideNotifications(for account: Account, new: Reading) {
         let (toSend, updated) = NotificationDecision.decide(
-            previous: previous, new: new, account: account,
+            new: new, account: account,
             settings: AccountNotificationSettings(threshold: account.threshold,
                                                   showAllWindows: account.showAllWindows),
             notificationsEnabled: notificationsEnabled, notified: NotifiedKeySet(keys: notifiedKeys),

@@ -24,7 +24,7 @@
 
 ## Architecture invariants
 
-- Secrets live only in the Keychain (generic password, service `org.kartax.TokenMeter`, account = Account id, value = Provider-specific JSON). Never write a secret to the config file (`~/Library/Application Support/TokenMeter/config.json`) or to logs; don't interpolate tokens or keys into `Logger` messages. Removing an Account deletes its Keychain item.
+- Secrets live only in the Keychain (generic password, service `org.kartax.TokenMeter`, account = Account id, value = Provider-specific JSON). Never write a secret to the config file (`~/Library/Application Support/TokenMeter/config.json`) or to logs; don't interpolate tokens or keys into `Logger` messages. Removing an Account deletes its Keychain item. DEBUG-only exception (smoke runs, see above): with `TOKENMETER_DEBUG_INSECURE_SECRETS=1` set, Provider credentials are file-backed under `<CFFIXED_USER_HOME>/secrets/` instead; the variable is read only in DEBUG builds, never in release.
 - Claude Code tokens are borrowed (ADR 0001): read from Claude Code's Keychain item (or `<config dir>/.credentials.json`) fresh on every fetch, held in memory only for that request, and never stored, copied (Keychain, config, logs) or refreshed. TokenMeter has no Claude sign-in; an expired token shows "Login expired — run `claude`" without a request. Removing a Claude Account never touches Claude Code's item. `ClaudeCredentials` is intentionally not `Encodable`.
 - Windows are identified by their data (e.g. window length or the response field that names them), never by a response's slot position (primary/secondary, array index).
 - Config fields are optional and decoded leniently (immich `AppConfig` pattern); never require a migration.

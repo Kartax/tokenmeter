@@ -103,8 +103,6 @@ notarized, stapled `TokenMeter.dmg` and publishes it with
   ([ADR 0004](docs/adr/0004-compiled-in-providers.md)).
 - One Claude Account per Claude Code config directory (several accounts
   require several `CLAUDE_CONFIG_DIR`s).
-- Usage-window notifications (per-account thresholds) are specified but not
-  in the first release.
 - The usage endpoints of Claude and Codex are undocumented and may change;
   unusual responses surface as "unavailable" rather than wrong numbers.
 

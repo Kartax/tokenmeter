@@ -75,7 +75,7 @@ final class AccountStoreSettingsTests: XCTestCase {
         let session = date("2026-10-18T17:00:00Z")
         store.record(.success(Reading(accountID: account.id, takenAt: now, quotas: [], credits: [])), for: account.id)
         store.decideNotifications(
-            for: account, previous: store.readings[account.id],
+            for: account,
             new: Reading(accountID: account.id, takenAt: now,
                          quotas: [Quota(window: Window(identity: .session, title: "Session", isMain: true,
                                        resetsAt: session), percentUsed: 91)],

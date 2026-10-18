@@ -1,5 +1,4 @@
 {
   "user": {"email": "user@example.com"},
-  "subscription": {"plan": "Starter", "monthly_credits": 22},
-  "purchased_credits_remaining": 0
+  "subscription": {"plan": "Starter", "monthly_credits": "22", "credits_remaining": "20"}
 }

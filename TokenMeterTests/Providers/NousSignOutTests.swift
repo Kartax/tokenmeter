@@ -17,12 +17,21 @@ final class NousSignOutTests: XCTestCase {
         func delete(for account: Account) throws { lock.withLock { stored = nil } }
     }
 
+    private var configDirectory: URL!
+
+    override func setUp() {
+        configDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("NousSignOutTests-\(UUID())", isDirectory: true)
+    }
+
+    override func tearDown() {
+        try? FileManager.default.removeItem(at: configDirectory)
+    }
+
     func testSignOutDeletesTokensAndKeepsTheAccountSignedOut() throws {
-        let url = URL(fileURLWithPath: "/tmp/ticket6/store-test-config.json")
-        try? FileManager.default.removeItem(at: url)
         let source = MemorySource(NousCredentials(accessToken: jwt(["exp": 4102444800]),
                                                   refreshToken: "refresh"))
-        let store = AccountStore(config: ConfigStore(url: url),
+        let store = AccountStore(config: ConfigStore(url: configDirectory.appendingPathComponent("config.json")),
                                  readerFor: { kind in kind == .nous ? CredentialedReader(provider: NousProvider(), source: source) : nil })
         let account = Account(kind: .nous, label: "Personal")
         store.add(account)
