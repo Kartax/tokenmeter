@@ -1,0 +1,5 @@
+{
+  "account": {"uuid": "00000000-0000-0000-0000-00000000000a", "email": "user@example.com", "full_name": "Example User"},
+  "organization": {"uuid": "00000000-0000-0000-0000-00000000000b", "name": "Example Org",
+                   "rate_limit_tier": "default_claude_max_5x", "billing_type": "stripe_subscription"}
+}
