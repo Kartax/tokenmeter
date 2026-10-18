@@ -66,6 +66,19 @@ struct DisplayFormat {
     }
 }
 
+/// Colour level of a Quota bar.
+enum UsageLevel: Equatable {
+    case normal, warning, critical
+}
+
+extension Quota {
+    /// Warning from 75% used, critical from 90% and whenever the limit is reached.
+    var level: UsageLevel {
+        if limitReached || percentUsed >= 90 { return .critical }
+        return percentUsed >= 75 ? .warning : .normal
+    }
+}
+
 private extension Decimal {
     func rounded(scale: Int) -> Decimal {
         var value = self

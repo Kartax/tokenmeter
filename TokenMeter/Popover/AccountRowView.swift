@@ -131,18 +131,47 @@ private struct QuotaView: View {
             HStack {
                 Text(quota.window.title).font(.caption)
                 Spacer()
-                Text(detail).font(.caption).foregroundStyle(.secondary)
+                detail.font(.caption).foregroundStyle(.secondary)
             }
-            ProgressView(value: quota.percentUsed, total: 100)
-                .progressViewStyle(.linear)
+            UsageBar(fraction: quota.percentUsed / 100, color: quota.level.color)
         }
     }
 
-    private var detail: String {
-        var text = quota.limitReached ? "limit reached" : "\(Int(quota.percentUsed.rounded()))% used"
+    /// "42% used · resets in 2 h 14 m"; over the limit: "100% · limit reached · resets …".
+    private var detail: Text {
+        var text = quota.limitReached
+            ? Text("100% · ") + Text("limit reached").foregroundColor(.red)
+            : Text("\(Int(quota.percentUsed.rounded()))% used")
         if let resetsAt = quota.window.resetsAt {
-            text += " · resets \(DisplayFormat().resetTime(resetsAt, now: now))"
+            text = text + Text(" · resets \(DisplayFormat().resetTime(resetsAt, now: now))")
         }
         return text
+    }
+}
+
+/// Horizontal bar filled to `fraction` in the usage level's colour.
+private struct UsageBar: View {
+    var fraction: Double
+    var color: Color
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                Capsule().fill(.quaternary)
+                Capsule().fill(color)
+                    .frame(width: geometry.size.width * min(max(fraction, 0), 1))
+            }
+        }
+        .frame(height: 6)
+    }
+}
+
+private extension UsageLevel {
+    var color: Color {
+        switch self {
+        case .normal: .accentColor
+        case .warning: .orange
+        case .critical: .red
+        }
     }
 }
