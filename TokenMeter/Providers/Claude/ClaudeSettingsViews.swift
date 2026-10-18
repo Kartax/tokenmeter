@@ -71,6 +71,9 @@ struct ClaudeDefaultLoginOffer: View {
                     Button("Add Claude Account…", action: onAdd)
                 }
                 .padding()
+            } else {
+                // A concrete (invisible) view, so `.task` runs before the offer is shown.
+                Color.clear.frame(width: 0, height: 0)
             }
         }
         // Attribute-only lookup: no Keychain prompt.
