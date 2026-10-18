@@ -18,7 +18,9 @@ struct SettingsView: View {
 
 struct GeneralSettingsView: View {
     var body: some View {
-        Form {}
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        Form {
+            AppBehaviourSection()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

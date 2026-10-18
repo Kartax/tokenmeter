@@ -19,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusItem()
+        UpdateChecker.shared.start()
         appLog.info("TokenMeter launched")
         Task { await store.refreshAll() }
     }
