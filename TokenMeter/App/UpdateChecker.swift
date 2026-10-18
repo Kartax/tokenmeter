@@ -25,20 +25,16 @@ final class UpdateChecker {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
     }
 
-    /// Persistence key for the "Check for updates daily" toggle.
-    /// Interim UserDefaults storage until the JSON config store (#3) lands; fold it into
-    /// `AppConfig.checkForUpdates` (nil → true) there.
-    private static let enabledKey = "checkForUpdates"
-
     /// Version of a newer release, without the leading "v"; nil when there is nothing to offer.
     private(set) var availableUpdate: String?
 
-    /// The "Check for updates daily" setting (on by default). Turning it off stops the
-    /// daily check and hides any offered update; turning it on checks right away.
+    /// The "Check for updates daily" setting (on by default), persisted as
+    /// `AppConfig.checkForUpdates`. Turning it off stops the daily check and hides any
+    /// offered update; turning it on checks right away.
     var isEnabled: Bool {
         didSet {
             guard isEnabled != oldValue else { return }
-            defaults.set(isEnabled, forKey: Self.enabledKey)
+            config.update { $0.checkForUpdates = isEnabled }
             updateLog.info("Daily update check \(self.isEnabled ? "enabled" : "disabled", privacy: .public)")
             if isEnabled {
                 start()
@@ -52,17 +48,17 @@ final class UpdateChecker {
 
     private let session: URLSession
     private let currentVersion: String
-    private let defaults: UserDefaults
+    @ObservationIgnored private let config: ConfigStore
     private let interval: Duration = .seconds(24 * 60 * 60)
     private var pollTask: Task<Void, Never>?
 
     init(session: URLSession = .shared,
          currentVersion: String = UpdateChecker.bundleVersion,
-         defaults: UserDefaults = .standard) {
+         config: ConfigStore = ConfigStore()) {
         self.session = session
         self.currentVersion = currentVersion
-        self.defaults = defaults
-        self.isEnabled = defaults.object(forKey: Self.enabledKey) as? Bool ?? true
+        self.config = config
+        self.isEnabled = config.load().checkForUpdates ?? true
     }
 
     /// Checks now and then once a day while enabled. Call once on launch.

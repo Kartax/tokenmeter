@@ -3,13 +3,12 @@ import XCTest
 
 @MainActor
 final class UpdateCheckerTests: XCTestCase {
-    private var defaults: UserDefaults!
-    private var suiteName: String!
+    private var configDirectory: URL!
     private var session: URLSession!
 
     override func setUp() async throws {
-        suiteName = "UpdateCheckerTests-\(UUID())"
-        defaults = UserDefaults(suiteName: suiteName)
+        configDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("UpdateCheckerTests-\(UUID())", isDirectory: true)
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [GitHubStub.self]
         session = URLSession(configuration: config)
@@ -17,12 +16,13 @@ final class UpdateCheckerTests: XCTestCase {
     }
 
     override func tearDown() async throws {
-        defaults.removePersistentDomain(forName: suiteName)
+        try? FileManager.default.removeItem(at: configDirectory)
         GitHubStub.reset()
     }
 
     private func makeChecker(currentVersion: String) -> UpdateChecker {
-        UpdateChecker(session: session, currentVersion: currentVersion, defaults: defaults)
+        UpdateChecker(session: session, currentVersion: currentVersion,
+                      config: ConfigStore(url: configDirectory.appendingPathComponent("config.json")))
     }
 
     func testNewerLatestReleaseIsOffered() async {
