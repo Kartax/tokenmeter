@@ -1,0 +1,16 @@
+{
+  "code": 200,
+  "success": true,
+  "data": [
+    {
+      "productName": "GLM Coding Plan Lite",
+      "status": "EXPIRED",
+      "nextRenewTime": 1793491200000
+    },
+    {
+      "productName": "GLM Coding Plan Pro",
+      "status": "VALID",
+      "nextRenewTime": 1793525400000
+    }
+  ]
+}
