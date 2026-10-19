@@ -96,8 +96,9 @@ private struct StaleLine: View {
     }
 }
 
-/// Quotas as bars with percent used and reset time; Credit balances as one line each.
-/// Only main entries unless the Account shows all Windows.
+/// Quotas as bars with percent used and reset time; Credit balances with an allowance get a bar
+/// from their remaining amount, others stay one line. Only main entries unless the Account shows
+/// all Windows.
 struct ReadingView: View {
     var reading: Reading
     var showAll: Bool
@@ -109,10 +110,7 @@ struct ReadingView: View {
                     QuotaView(quota: quota, now: context.date)
                 }
                 ForEach(Array(credits.enumerated()), id: \.offset) { _, credit in
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(credit.title).font(.caption).foregroundStyle(.secondary)
-                        Text(DisplayFormat().creditLine(credit, now: context.date)).font(.callout)
-                    }
+                    CreditView(credit: credit, now: context.date)
                 }
             }
         }
@@ -146,6 +144,32 @@ private struct QuotaView: View {
             text = text + Text(" · resets \(DisplayFormat().resetTime(resetsAt, now: now))")
         }
         return text
+    }
+}
+
+/// A Credit balance: title and, when the Provider reports an allowance, percent used with a bar,
+/// followed by the remaining amount.
+private struct CreditView: View {
+    var credit: CreditBalance
+    var now: Date
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(credit.title).font(.caption)
+                Spacer()
+                if let percentUsed = credit.percentUsed {
+                    Text("\(Int(percentUsed.rounded()))% used")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            if let percentUsed = credit.percentUsed {
+                UsageBar(fraction: percentUsed / 100,
+                         color: UsageLevel(percentUsed: percentUsed).color)
+            }
+            Text(DisplayFormat().creditLine(credit, now: now)).font(.callout)
+        }
     }
 }
 

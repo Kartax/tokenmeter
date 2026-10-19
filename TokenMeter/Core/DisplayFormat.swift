@@ -66,16 +66,26 @@ struct DisplayFormat {
     }
 }
 
-/// Colour level of a Quota bar.
+/// Colour level of a usage bar.
 enum UsageLevel: Equatable {
     case normal, warning, critical
+
+    /// Warning from 75% used, critical from 90% and whenever the limit is reached.
+    init(percentUsed: Double, limitReached: Bool = false) {
+        if limitReached || percentUsed >= 90 {
+            self = .critical
+        } else if percentUsed >= 75 {
+            self = .warning
+        } else {
+            self = .normal
+        }
+    }
 }
 
 extension Quota {
     /// Warning from 75% used, critical from 90% and whenever the limit is reached.
     var level: UsageLevel {
-        if limitReached || percentUsed >= 90 { return .critical }
-        return percentUsed >= 75 ? .warning : .normal
+        UsageLevel(percentUsed: percentUsed, limitReached: limitReached)
     }
 }
 

@@ -139,6 +139,16 @@ struct CreditBalance: Equatable, Codable, Sendable {
     static let creditsUnit = "credits"
 }
 
+extension CreditBalance {
+    /// Percent of `allowance` used, clamped to 0…100; nil without a positive allowance.
+    /// A rollover balance (remaining above the allowance) reads as 0% used.
+    var percentUsed: Double? {
+        guard let allowance, allowance > 0 else { return nil }
+        let percent = (allowance - remaining) / allowance * 100
+        return min(max(NSDecimalNumber(decimal: percent).doubleValue, 0), 100)
+    }
+}
+
 /// The Quotas and Credit balances fetched for one Account at one moment.
 struct Reading: Equatable, Codable, Sendable {
     var accountID: UUID
