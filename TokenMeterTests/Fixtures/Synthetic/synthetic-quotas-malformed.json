@@ -1,0 +1,6 @@
+{
+  "rollingFiveHourLimit": {
+    "remaining": "lots",
+    "max": 100
+  }
+}
