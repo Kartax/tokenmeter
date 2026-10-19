@@ -20,6 +20,12 @@ Releases).
 brew install --cask kartax/tap/tokenmeter
 ```
 
+## Screenshots
+
+![TokenMeter popover showing usage windows and credit balances for Claude, Codex, GitHub Copilot and Ollama Cloud](docs/popover.png)
+
+![TokenMeter Settings showing the Accounts tab with Claude selected](docs/settings.png)
+
 ## What it does
 
 - One popover with every account's usage: percent used per Window (5-hour
