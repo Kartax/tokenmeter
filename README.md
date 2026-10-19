@@ -42,7 +42,7 @@ brew install --cask kartax/tap/tokenmeter
 | Venice.ai | **Admin API key**, pasted in Settings | Inference keys cannot read billing; create an **Admin** key at [venice.ai/settings/api](https://venice.ai/settings/api). Reads the daily DIEM epoch (resets 00:00 UTC) plus bundled, earned and USD credit balances. |
 | Z.ai | **API key**, pasted in Settings | Reads the GLM Coding Plan's 5-hour and weekly token quotas plus the monthly web-search/reader call quota. |
 | xAI | **Management API key + team ID**, pasted in Settings | Reads the team's prepaid USD credit balance (and the postpaid remaining estimate when returned). Inference keys are rejected; create a Management key in the xAI Console. |
-| Cursor | Borrows **Cursor's** local login (desktop `state.vscdb` or the `cursor-agent` Keychain item) | Reads the billing-cycle percentage plus Auto and API sub-windows. Tokens are read per fetch and never stored or refreshed. |
+| Cursor | Borrows **Cursor's** local login (desktop `state.vscdb` or the `cursor-agent` Keychain item) | Reads the billing-cycle percentage plus Auto and API sub-windows. Tokens are read per fetch and never stored; an expired token is refreshed in memory only. |
 | OpenCode | **API key**, pasted in Settings | Reads OpenCode Go/Zen rolling 5-hour, weekly and monthly usage percentages. |
 | Alibaba Cloud | **Coding Plan API key** (`sk-sp-…`) + region, pasted in Settings | Reads the Coding Plan's 5-hour, weekly and monthly request quotas from the Model Studio console endpoint. |
 | Gemini | Borrows the **Gemini CLI** login (`~/.gemini/oauth_creds.json`) | Reads per-model remaining quota through Google's Code Assist API. Tokens are refreshed in memory only and never stored; the free Code Assist tier has been retired by Google. |

@@ -326,7 +326,7 @@
               <td><strong>Cursor</strong></td>
               <td>
                 Borrows Cursor's local login (desktop <code>state.vscdb</code> or the <code>cursor-agent</code> Keychain item).
-                <span class="why">Reads the billing-cycle percentage plus Auto and API sub-windows. Tokens are read per fetch and never stored or refreshed.</span>
+                <span class="why">Reads the billing-cycle percentage plus Auto and API sub-windows. Tokens are read per fetch and never stored; an expired token is refreshed in memory only.</span>
               </td>
             </tr>
             <tr>
