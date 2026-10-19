@@ -1,0 +1,17 @@
+{
+  "base_resp": {
+    "status_code": 0,
+    "status_msg": "success"
+  },
+  "model_remains": [
+    {
+      "model_name": "general",
+      "current_interval_total_count": 100,
+      "current_interval_usage_count": 40,
+      "start_time": "2026-10-18T08:00:00Z",
+      "end_time": "2026-10-18T13:00:00Z",
+      "current_subscribe_title": "Token Plan Plus",
+      "plan_name": "Ignored Plan"
+    }
+  ]
+}
