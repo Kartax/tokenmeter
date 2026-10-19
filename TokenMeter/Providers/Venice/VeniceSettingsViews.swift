@@ -12,7 +12,7 @@ enum VeniceKeyCheck {
     static func message(for failure: ReadingFailure) -> String {
         switch failure {
         case .loginExpired:
-            "Venice.ai rejected this API key. Check that you copied the whole key from venice.ai/settings/api."
+            "Venice.ai needs an Admin API key to read billing; inference keys are rejected. Create an Admin key at venice.ai/settings/api and paste it here."
         case .rateLimited(let retryAfter?):
             "Venice.ai is rate limiting requests. Try again in \(Int(retryAfter.rounded(.up))) s."
         case .rateLimited(nil):
@@ -39,8 +39,8 @@ struct VeniceAddAccountForm: View {
     var body: some View {
         Form {
             TextField("Label", text: $label)
-            SecureField("API key", text: $apiKey)
-            Text("Create a key at [venice.ai/settings/api](https://venice.ai/settings/api). It is stored in your Keychain.")
+            SecureField("Admin API key", text: $apiKey)
+            Text("Venice.ai requires an **Admin** API key to read billing; inference keys are rejected. Create one at [venice.ai/settings/api](https://venice.ai/settings/api). It is stored in your Keychain.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             if let errorMessage {
@@ -95,7 +95,10 @@ struct VeniceAccountSettings: View {
     @State private var message: (text: String, isError: Bool)?
 
     var body: some View {
-        SecureField("New API key", text: $apiKey)
+        Text("Replacing this key needs another **Admin** API key; the daily DIEM progress uses the billing endpoint.")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        SecureField("New Admin API key", text: $apiKey)
         HStack {
             if let message {
                 Text(message.text)

@@ -38,6 +38,14 @@ final class VeniceProviderTests: XCTestCase {
         ])
     }
 
+    func testStringEncodedAmountsStillMapTheDIEMProgress() async throws {
+        let reading = try await read(["GET /api/v1/billing/balance": .fixture("venice-balance-strings")]).get()
+
+        XCTAssertEqual(reading.quotas.count, 1)
+        XCTAssertEqual(reading.quotas.first?.percentUsed ?? 0, 9.5, accuracy: 0.001)
+        XCTAssertEqual(reading.credits.map(\.remaining), [10, 5, 25])
+    }
+
     func testRequestUsesBearerTokenAndVeniceHost() async throws {
         _ = try await read(["GET /api/v1/billing/balance": .fixture("venice-balance-diem")]).get()
 
@@ -76,12 +84,12 @@ final class VeniceProviderTests: XCTestCase {
         XCTAssertEqual(reading.credits.first?.currency, CreditBalance.creditsUnit)
     }
 
-    func testUnauthorizedIsLoginExpiredWithCheckApiKey() async {
+    func testUnauthorizedInferenceKeyPointsToAnAdminKey() async {
         let result = await read([
             "GET /api/v1/billing/balance": .fixture("venice-unauthorized", status: 401),
         ])
 
-        XCTAssertEqual(result, .failure(.loginExpired(hint: "Check API key")))
+        XCTAssertEqual(result, .failure(.loginExpired(hint: "Use an Admin API key")))
     }
 
     func testForbiddenIsLoginExpired() async {
@@ -89,7 +97,7 @@ final class VeniceProviderTests: XCTestCase {
             "GET /api/v1/billing/balance": .fixture("venice-unauthorized", status: 403),
         ])
 
-        XCTAssertEqual(result, .failure(.loginExpired(hint: "Check API key")))
+        XCTAssertEqual(result, .failure(.loginExpired(hint: "Use an Admin API key")))
     }
 
     func testTooManyRequestsIsRateLimitedWithRetryAfter() async {

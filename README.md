@@ -36,7 +36,7 @@ brew install --cask kartax/tap/tokenmeter
 | Codex | **Sign-in** in TokenMeter (device-code browser flow) | Own OAuth grant, stored and rotated in the Keychain — [ADR 0003](docs/adr/0003-own-device-code-oauth-for-codex-and-nous.md). |
 | Nous Portal | **Sign-in** in TokenMeter (device-code browser flow) | Same flow as Codex. |
 | Ollama Cloud | **API key**, pasted in Settings | Create a key on your Ollama dashboard. |
-| Venice.ai | **API key**, pasted in Settings | Create a key at [venice.ai/settings/api](https://venice.ai/settings/api). Reads the daily DIEM epoch (resets 00:00 UTC) plus bundled, earned and USD credit balances. |
+| Venice.ai | **Admin API key**, pasted in Settings | Inference keys cannot read billing; create an **Admin** key at [venice.ai/settings/api](https://venice.ai/settings/api). Reads the daily DIEM epoch (resets 00:00 UTC) plus bundled, earned and USD credit balances. |
 
 ## Privacy
 

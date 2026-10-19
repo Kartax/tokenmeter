@@ -5,12 +5,15 @@ struct VeniceCredentials: Codable, Equatable, Sendable {
     var apiKey: String
 }
 
-/// Reads `GET /api/v1/billing/balance`. Venice funds inference from staked DIEM first (1 DIEM
-/// = $1 per epoch, refreshed at 00:00 UTC), then bundled credits, then USD, then earned credits.
-/// See https://docs.venice.ai/api-reference/endpoint/billing/balance
+/// Reads `GET /api/v1/billing/balance`. Venice requires an **Admin** API key for billing
+/// (inference keys answer 401 "Admin API key required"). It funds inference from staked DIEM
+/// first (1 DIEM = $1 per epoch, refreshed at 00:00 UTC), then bundled credits, then USD, then
+/// earned credits.
+/// See https://docs.venice.ai/api-reference/api-spec#key-types and
+/// https://docs.venice.ai/api-reference/endpoint/billing/balance
 struct VeniceProvider: Provider {
     static let defaultBaseURL = URL(string: "https://api.venice.ai/api/v1")!
-    static let loginHint = "Check API key"
+    static let loginHint = "Use an Admin API key"
 
     /// The instance the app uses (honours the DEBUG `TOKENMETER_VENICE_BASE_URL` override).
     static let live = VeniceProvider(baseURL: ProviderRegistry.debugBaseURL("TOKENMETER_VENICE_BASE_URL")
@@ -53,11 +56,11 @@ struct VeniceProvider: Provider {
     /// balance. `isMain` marks what the next request will charge (DIEM, then the active credit);
     /// the rest stay visible under "Show all Windows".
     static func map(_ balances: BalanceResponse.Balances, consumptionCurrency: String?,
-                    epochAllocation: Decimal?, now: Date) -> (quotas: [Quota], credits: [CreditBalance]) {
+                    epochAllocation: FlexibleMoney?, now: Date) -> (quotas: [Quota], credits: [CreditBalance]) {
         var quotas: [Quota] = []
         var credits: [CreditBalance] = []
 
-        if let allocation = epochAllocation, allocation > 0, let remaining = balances.diem {
+        if let allocation = epochAllocation?.amount, allocation > 0, let remaining = balances.diem?.amount {
             let allocationValue = NSDecimalNumber(decimal: allocation).doubleValue
             let remainingValue = NSDecimalNumber(decimal: remaining).doubleValue
             let used = (allocationValue - remainingValue) / allocationValue * 100
@@ -76,17 +79,17 @@ struct VeniceProvider: Provider {
         }
 
         // Spend order after DIEM: bundled credits, then USD; earned credits are a separate grant.
-        if let bundled = balances.bundledCredits {
+        if let bundled = balances.bundledCredits?.amount {
             credits.append(CreditBalance(id: "bundled", title: "Bundled credits", remaining: bundled,
                                          allowance: nil, currency: CreditBalance.creditsUnit,
                                          renewsAt: nil, isMain: isMain("BUNDLED_CREDITS")))
         }
-        if let earned = balances.earnedCredits {
+        if let earned = balances.earnedCredits?.amount {
             credits.append(CreditBalance(id: "earned", title: "Earned credits", remaining: earned,
                                          allowance: nil, currency: CreditBalance.creditsUnit,
                                          renewsAt: nil, isMain: isMain("EARNED_CREDITS")))
         }
-        if let usd = balances.usd {
+        if let usd = balances.usd?.amount {
             credits.append(CreditBalance(id: "usd", title: "USD credits", remaining: usd,
                                          allowance: nil, currency: "USD",
                                          renewsAt: nil, isMain: isMain("USD")))
@@ -111,13 +114,13 @@ struct VeniceProvider: Provider {
         var canConsume: Bool?
         var consumptionCurrency: String?
         var balances: Balances?
-        var diemEpochAllocation: Decimal?
+        var diemEpochAllocation: FlexibleMoney?
 
         struct Balances: Decodable {
-            var diem: Decimal?
-            var usd: Decimal?
-            var bundledCredits: Decimal?
-            var earnedCredits: Decimal?
+            var diem: FlexibleMoney?
+            var usd: FlexibleMoney?
+            var bundledCredits: FlexibleMoney?
+            var earnedCredits: FlexibleMoney?
         }
     }
 }
