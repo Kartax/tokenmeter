@@ -1,0 +1,15 @@
+{
+  "limits": {
+    "currency": "USD",
+    "completion": {
+      "no_monthly_limit": false,
+      "monthly_limit_reached": false,
+      "usage": 42,
+      "total_usage": 42,
+      "vibe_usage": 0,
+      "usage_limit": null
+    },
+    "last_payment_failure": null,
+    "last_payment_failure_protection": false
+  }
+}
