@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "monthUsage": {
+      "percent": 47.5,
+      "items": []
+    }
+  }
+}
