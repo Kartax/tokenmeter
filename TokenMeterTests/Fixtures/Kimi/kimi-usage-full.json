@@ -1,0 +1,26 @@
+{
+  "usage": {
+    "limit": "100",
+    "remaining": "74",
+    "resetTime": "2026-11-01T00:00:00Z"
+  },
+  "limits": [
+    {
+      "window": { "duration": 300, "timeUnit": "TIME_UNIT_MINUTE" },
+      "detail": {
+        "limit": "100",
+        "remaining": "100",
+        "resetTime": "2026-10-18T17:00:00Z"
+      }
+    },
+    {
+      "window": { "duration": 10080, "timeUnit": "TIME_UNIT_MINUTE" },
+      "detail": {
+        "limit": "1000",
+        "remaining": "250",
+        "resetTime": "2026-10-25T00:00:00Z"
+      }
+    }
+  ],
+  "user": { "membership": { "level": "LEVEL_INTERMEDIATE" } }
+}
