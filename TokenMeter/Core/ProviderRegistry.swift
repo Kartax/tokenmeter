@@ -24,9 +24,32 @@ enum ProviderRegistry {
         case .venice:
             CredentialedReader(provider: VeniceProvider.live,
                                source: VeniceProvider.credentialSource)
-        case .zai, .xai, .cursor, .opencode, .alibaba, .gemini, .antigravity,
-             .minimax, .kimi, .synthetic, .deepseek, .mistral, .xiaomi:
-            nil
+        case .zai:
+            CredentialedReader(provider: ZaiProvider.live, source: ZaiProvider.credentialSource)
+        case .xai:
+            CredentialedReader(provider: XaiProvider.live, source: XaiProvider.credentialSource)
+        case .cursor:
+            CredentialedReader(provider: CursorProvider.live, source: CursorProvider.credentialSource)
+        case .opencode:
+            CredentialedReader(provider: OpenCodeProvider.live, source: OpenCodeProvider.credentialSource)
+        case .alibaba:
+            CredentialedReader(provider: AlibabaProvider.live, source: AlibabaProvider.credentialSource)
+        case .gemini:
+            CredentialedReader(provider: GeminiProvider.live, source: GeminiProvider.credentialSource)
+        case .antigravity:
+            CredentialedReader(provider: AntigravityProvider.live, source: AntigravityProvider.credentialSource)
+        case .minimax:
+            CredentialedReader(provider: MiniMaxProvider.live, source: MiniMaxProvider.credentialSource)
+        case .kimi:
+            CredentialedReader(provider: KimiProvider.live, source: KimiProvider.credentialSource)
+        case .synthetic:
+            CredentialedReader(provider: SyntheticProvider.live, source: SyntheticProvider.credentialSource)
+        case .deepseek:
+            CredentialedReader(provider: DeepSeekProvider.live, source: DeepSeekProvider.credentialSource)
+        case .mistral:
+            CredentialedReader(provider: MistralProvider.live, source: MistralProvider.credentialSource)
+        case .xiaomi:
+            CredentialedReader(provider: XiaomiProvider.live, source: XiaomiProvider.credentialSource)
         }
     }
 

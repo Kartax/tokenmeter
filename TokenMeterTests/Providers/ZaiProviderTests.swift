@@ -46,6 +46,24 @@ final class ZaiProviderTests: XCTestCase {
         XCTAssertEqual(reading.quotas[2].percentUsed, 25, accuracy: 0.001)
     }
 
+    func testDateOnlySubscriptionRenewalParsesAndResetsWebSearch() async throws {
+        let reading = try await read([
+            quotaPath: .json("""
+                {"code":200,"success":true,"data":{"limits":[
+                  {"type":"TIME_LIMIT","unit":5,"number":1,"usage":10,"currentValue":1,"percentage":10}
+                ]}}
+                """),
+            subscriptionPath: .json("""
+                {"code":200,"success":true,"data":[
+                  {"productName":"GLM Coding Plan Pro","status":"VALID","nextRenewTime":"2026-11-12"}
+                ]}
+                """),
+        ]).get()
+
+        XCTAssertEqual(reading.plan, "GLM Coding Plan Pro")
+        XCTAssertEqual(reading.quotas.first?.window.resetsAt, date("2026-11-12T00:00:00Z"))
+    }
+
     func testRequestUsesBearerTokenAndZaiHosts() async throws {
         _ = try await read([
             quotaPath: .fixture("zai-quota-full"),
@@ -98,7 +116,7 @@ final class ZaiProviderTests: XCTestCase {
         XCTAssertEqual(reading.quotas.first?.window,
                        Window(identity: .scoped("web_search"), title: "Web searches", isMain: true,
                               resetsAt: date("2026-11-01T00:00:00Z"), length: nil))
-        XCTAssertEqual(reading.quotas.first?.percentUsed, 10, accuracy: 0.001)
+        XCTAssertEqual(try XCTUnwrap(reading.quotas.first?.percentUsed), 10, accuracy: 0.001)
         XCTAssertNil(reading.plan)
     }
 

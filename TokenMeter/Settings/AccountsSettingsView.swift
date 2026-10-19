@@ -116,9 +116,32 @@ private struct AddAccountSheet: View {
                 NousAddAccountForm(store: store, onDone: onDone)
             case .venice:
                 VeniceAddAccountForm(store: store, onDone: onDone)
-            case .zai, .xai, .cursor, .opencode, .alibaba, .gemini, .antigravity,
-                 .minimax, .kimi, .synthetic, .deepseek, .mistral, .xiaomi:
-                EmptyView()
+            case .zai:
+                ZaiAddAccountForm(store: store, onDone: onDone)
+            case .xai:
+                XaiAddAccountForm(store: store, onDone: onDone)
+            case .cursor:
+                CursorAddAccountForm(store: store, onDone: onDone)
+            case .opencode:
+                OpenCodeAddAccountForm(store: store, onDone: onDone)
+            case .alibaba:
+                AlibabaAddAccountForm(store: store, onDone: onDone)
+            case .gemini:
+                GeminiAddAccountForm(store: store, onDone: onDone)
+            case .antigravity:
+                AntigravityAddAccountForm(store: store, onDone: onDone)
+            case .minimax:
+                MiniMaxAddAccountForm(store: store, onDone: onDone)
+            case .kimi:
+                KimiAddAccountForm(store: store, onDone: onDone)
+            case .synthetic:
+                SyntheticAddAccountForm(store: store, onDone: onDone)
+            case .deepseek:
+                DeepSeekAddAccountForm(store: store, onDone: onDone)
+            case .mistral:
+                MistralAddAccountForm(store: store, onDone: onDone)
+            case .xiaomi:
+                XiaomiAddAccountForm(store: store, onDone: onDone)
             }
         }
         .padding(20)
@@ -189,9 +212,32 @@ private struct AccountDetailView: View {
                 NousAccountSettings(store: store, account: account)
             case .venice:
                 VeniceAccountSettings(store: store, account: account)
-            case .zai, .xai, .cursor, .opencode, .alibaba, .gemini, .antigravity,
-                 .minimax, .kimi, .synthetic, .deepseek, .mistral, .xiaomi:
-                EmptyView()
+            case .zai:
+                ZaiAccountSettings(store: store, account: account)
+            case .xai:
+                XaiAccountSettings(store: store, account: account)
+            case .cursor:
+                CursorAccountSettings(store: store, account: account)
+            case .opencode:
+                OpenCodeAccountSettings(store: store, account: account)
+            case .alibaba:
+                AlibabaAccountSettings(store: store, account: account)
+            case .gemini:
+                GeminiAccountSettings(store: store, account: account)
+            case .antigravity:
+                AntigravityAccountSettings(store: store, account: account)
+            case .minimax:
+                MiniMaxAccountSettings(store: store, account: account)
+            case .kimi:
+                KimiAccountSettings(store: store, account: account)
+            case .synthetic:
+                SyntheticAccountSettings(store: store, account: account)
+            case .deepseek:
+                DeepSeekAccountSettings(store: store, account: account)
+            case .mistral:
+                MistralAccountSettings(store: store, account: account)
+            case .xiaomi:
+                XiaomiAccountSettings(store: store, account: account)
             }
             HStack {
                 Spacer()

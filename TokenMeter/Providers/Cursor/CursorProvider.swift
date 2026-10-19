@@ -208,7 +208,7 @@ struct CursorProvider: Provider {
 
     /// The main "Billing cycle" Window always exists; "Auto" and "API" are added only when the
     /// response reports their percentages. Nil when no main percentage can be derived.
-    static func map(_ usage: UsageResponse.PlanUsage, plan: PlanInfo) -> [Quota]? {
+    private static func map(_ usage: UsageResponse.PlanUsage, plan: PlanInfo) -> [Quota]? {
         let start = epochDate(usage.billingCycleStart)
         let end = epochDate(usage.billingCycleEnd) ?? epochDate(plan.billingCycleEnd)
         let length = start.flatMap { start in end.map { $0.timeIntervalSince(start) } }.flatMap {
@@ -252,17 +252,17 @@ struct CursorProvider: Provider {
 
     // MARK: - Response bodies
 
-    struct PlanResponse: Decodable {
+    private struct PlanResponse: Decodable {
         var planInfo: PlanInfo?
     }
 
-    struct PlanInfo: Decodable {
+    private struct PlanInfo: Decodable {
         var planName: String?
         var billingCycleEnd: FlexibleNumber?
         var includedAmountCents: FlexibleNumber?
     }
 
-    struct UsageResponse: Decodable {
+    private struct UsageResponse: Decodable {
         var planUsage: PlanUsage?
 
         struct PlanUsage: Decodable {
@@ -279,7 +279,7 @@ struct CursorProvider: Provider {
     }
 }
 
-/// A JSON number or numeric string (`1500`, `"1500"`, `19.25`); nil for anything else.
+/// A JSON number or numeric string (`1500`, `"1500"`, 19.25); nil for anything else.
 private struct FlexibleNumber: Decodable {
     var value: Double?
 

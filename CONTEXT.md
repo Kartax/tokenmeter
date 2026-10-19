@@ -5,7 +5,7 @@ A macOS menu-bar app that shows, at a glance, how much of each AI subscription's
 ## Language
 
 **Provider**:
-An AI service whose subscription usage TokenMeter knows how to read (Claude, Codex, GitHub Copilot, Ollama Cloud, Nous Portal, Venice.ai).
+An AI service whose subscription usage TokenMeter knows how to read (Claude, Codex, GitHub Copilot, Ollama Cloud, Nous Portal, Venice.ai, Z.ai, xAI, Cursor, OpenCode, Alibaba Cloud, Gemini, Antigravity, MiniMax, Kimi, Synthetic, DeepSeek, Mistral, Xiaomi MiMo).
 _Avoid_: Vendor, service, integration
 
 **Account**:

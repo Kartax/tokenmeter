@@ -233,8 +233,8 @@ final class KimiProviderTests: XCTestCase {
         try original.write(to: url)
         let source = KimiCredentialSource(fileURL: url)
 
-        source.save(KimiCredentials(accessToken: "test-rotated-token"), for: account)
-        source.delete(for: account)
+        try source.save(KimiCredentials(accessToken: "test-rotated-token"), for: account)
+        try source.delete(for: account)
 
         XCTAssertEqual(try Data(contentsOf: url), original)
         switch source.load(for: account) {

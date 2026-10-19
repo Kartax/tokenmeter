@@ -315,7 +315,7 @@ struct MiniMaxTimeValue: Decodable, Sendable {
 
 private extension KeyedDecodingContainer {
     /// Counts arrive as numbers or numeric strings.
-    func flexibleInt<Key: CodingKey>(_ key: Key) -> Int? {
+    func flexibleInt(_ key: K) -> Int? {
         if let value = try? decodeIfPresent(Int.self, forKey: key) { return value }
         if let value = try? decodeIfPresent(Double.self, forKey: key) { return Int(value) }
         if let value = try? decodeIfPresent(String.self, forKey: key) {
@@ -324,7 +324,7 @@ private extension KeyedDecodingContainer {
         return nil
     }
 
-    func flexibleDouble<Key: CodingKey>(_ key: Key) -> Double? {
+    func flexibleDouble(_ key: K) -> Double? {
         if let value = try? decodeIfPresent(Double.self, forKey: key) { return value }
         if let value = try? decodeIfPresent(String.self, forKey: key) {
             return Double(value.trimmingCharacters(in: .whitespacesAndNewlines))
@@ -332,13 +332,13 @@ private extension KeyedDecodingContainer {
         return nil
     }
 
-    func optionalString<Key: CodingKey>(_ key: Key) -> String? {
+    func optionalString(_ key: K) -> String? {
         guard let value = try? decodeIfPresent(String.self, forKey: key) else { return nil }
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed
     }
 
-    func optionalTime<Key: CodingKey>(_ key: Key) -> MiniMaxTimeValue? {
+    func optionalTime(_ key: K) -> MiniMaxTimeValue? {
         try? decodeIfPresent(MiniMaxTimeValue.self, forKey: key)
     }
 }

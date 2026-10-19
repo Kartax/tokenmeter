@@ -36,7 +36,7 @@ final class CursorProviderTests: XCTestCase {
             Quota(window: Window(identity: .scoped("api"), title: "API", isMain: false,
                                  resetsAt: reset, length: 2_678_400), percentUsed: 55),
         ])
-        XCTAssertEqual(reading.quotas.map(\.isMain), [true, false, false])
+        XCTAssertEqual(reading.quotas.map(\.window.isMain), [true, false, false])
         XCTAssertFalse(reading.quotas[0].limitReached)
     }
 

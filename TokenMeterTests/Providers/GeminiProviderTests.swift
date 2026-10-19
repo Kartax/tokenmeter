@@ -28,14 +28,15 @@ final class GeminiProviderTests: XCTestCase {
         XCTAssertEqual(reading.plan, "Standard")
         XCTAssertNil(reading.identity)
         XCTAssertEqual(reading.credits, [])
-        XCTAssertEqual(reading.quotas, [
-            Quota(window: Window(identity: .scoped("gemini-2.5-pro"), title: "gemini-2.5-pro",
-                                 isMain: true, resetsAt: date("2026-10-20T00:00:00Z"), length: nil),
-                  percentUsed: 75),
-            Quota(window: Window(identity: .scoped("gemini-2.5-flash"), title: "gemini-2.5-flash",
-                                 isMain: false, resetsAt: date("2026-10-20T00:00:00Z"), length: nil),
-                  percentUsed: 20),
+        XCTAssertEqual(reading.quotas.map(\.window), [
+            Window(identity: .scoped("gemini-2.5-pro"), title: "gemini-2.5-pro",
+                   isMain: true, resetsAt: date("2026-10-20T00:00:00Z"), length: nil),
+            Window(identity: .scoped("gemini-2.5-flash"), title: "gemini-2.5-flash",
+                   isMain: false, resetsAt: date("2026-10-20T00:00:00Z"), length: nil),
         ])
+        XCTAssertEqual(reading.quotas.count, 2)
+        XCTAssertEqual(reading.quotas[0].percentUsed, 75, accuracy: 0.001)
+        XCTAssertEqual(reading.quotas[1].percentUsed, 20, accuracy: 0.001)
     }
 
     func testRefreshNotNeededUsesAccessTokenAndSendsExpectedRequests() async throws {

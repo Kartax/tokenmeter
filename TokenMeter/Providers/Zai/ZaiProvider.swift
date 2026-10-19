@@ -191,8 +191,8 @@ struct ZaiProvider: Provider {
         var nextRenewTime: EpochMilliseconds?
     }
 
-    /// A timestamp that may be encoded as a number or a string; a malformed value costs the
-    /// reset, not the whole subscription list.
+    /// A renewal date that may be epoch milliseconds or a `yyyy-MM-dd`/ISO date string; a
+    /// malformed value costs the reset, not the whole subscription list.
     private struct EpochMilliseconds: Decodable {
         var value: Int64?
 
@@ -200,11 +200,26 @@ struct ZaiProvider: Provider {
             let container = try decoder.singleValueContainer()
             if let number = try? container.decode(Int64.self) {
                 value = number
-            } else if let string = try? container.decode(String.self) {
-                value = Int64(string)
-            } else {
-                value = nil
+                return
             }
+            guard let string = try? container.decode(String.self) else {
+                value = nil
+                return
+            }
+            let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let milliseconds = Int64(trimmed) {
+                value = milliseconds
+                return
+            }
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.timeZone = TimeZone(identifier: "UTC")
+            formatter.dateFormat = "yyyy-MM-dd"
+            if let date = formatter.date(from: trimmed) {
+                value = Int64(date.timeIntervalSince1970 * 1000)
+                return
+            }
+            value = HTTP.date(trimmed).map { Int64($0.timeIntervalSince1970 * 1000) }
         }
     }
 

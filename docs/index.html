@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>TokenMeter — AI subscription usage in your macOS menu bar</title>
-  <meta name="description" content="TokenMeter is a free macOS menu-bar app that shows, at a glance, how much of each AI subscription's usage allowance is left before it resets. Claude, Codex, GitHub Copilot, Nous Portal, Ollama and Venice.ai in one popover." />
-  <meta name="keywords" content="TokenMeter, macOS menu bar, Claude usage, Codex usage, GitHub Copilot usage, Claude rate limits, AI subscription monitor, Ollama usage, Nous Portal, Venice.ai usage, DIEM, usage meter" />
+  <meta name="description" content="TokenMeter is a free macOS menu-bar app that shows, at a glance, how much of each AI subscription's usage allowance is left before it resets. Claude, Codex, GitHub Copilot, Nous Portal, Ollama, Venice.ai, Z.ai, xAI, Cursor, OpenCode, Alibaba Cloud, Gemini, Antigravity, MiniMax, Kimi, Synthetic, DeepSeek, Mistral and Xiaomi MiMo in one popover." />
+  <meta name="keywords" content="TokenMeter, macOS menu bar, Claude usage, Codex usage, GitHub Copilot usage, Claude rate limits, AI subscription monitor, Ollama usage, Nous Portal, Venice.ai usage, Z.ai usage, GLM coding plan, xAI credits, Cursor usage, OpenCode usage, Alibaba Cloud coding plan, Gemini usage, Antigravity usage, MiniMax usage, Kimi usage, Synthetic usage, DeepSeek balance, Mistral usage, Xiaomi MiMo usage, DIEM, usage meter" />
   <link rel="canonical" href="https://kartax.github.io/tokenmeter/" />
   <meta name="robots" content="index, follow" />
   <meta name="google-site-verification" content="BdalF3KEWiHYoNYg3e8o9PL3c_POPEoegzsFeXHF7Ek" />
@@ -256,6 +256,10 @@
 
     <section id="providers">
       <h2>Providers and authentication</h2>
+      <p class="lede" style="margin-bottom:18px;">
+        Nineteen providers, one popover. Use an API key, sign in with a device
+        code, or let TokenMeter borrow the login your coding tool already has.
+      </p>
       <div class="tablewrap">
         <table>
           <thead>
@@ -304,6 +308,97 @@
                 <span class="why">Inference keys cannot read billing. Create an Admin key in <a href="https://venice.ai/settings/api">Venice's API settings</a>; TokenMeter draws the daily DIEM epoch (refreshed at 00:00 UTC) as a progress bar and lists bundled, earned and USD credit balances.</span>
               </td>
             </tr>
+            <tr>
+              <td><strong>Z.ai</strong></td>
+              <td>
+                API key, pasted in Settings.
+                <span class="why">Reads the GLM Coding Plan's 5-hour and weekly token quotas plus the monthly web-search/reader call quota.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>xAI</strong></td>
+              <td>
+                Management API key + team ID, pasted in Settings.
+                <span class="why">Reads the team's prepaid USD credit balance (and the postpaid remaining estimate when returned). Inference keys are rejected; create a Management key in the xAI Console.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Cursor</strong></td>
+              <td>
+                Borrows Cursor's local login (desktop <code>state.vscdb</code> or the <code>cursor-agent</code> Keychain item).
+                <span class="why">Reads the billing-cycle percentage plus Auto and API sub-windows. Tokens are read per fetch and never stored or refreshed.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>OpenCode</strong></td>
+              <td>
+                API key, pasted in Settings.
+                <span class="why">Reads OpenCode Go/Zen rolling 5-hour, weekly and monthly usage percentages.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Alibaba Cloud</strong></td>
+              <td>
+                Coding Plan API key (<code>sk-sp-…</code>) + region, pasted in Settings.
+                <span class="why">Reads the Coding Plan's 5-hour, weekly and monthly request quotas from the Model Studio console endpoint.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Gemini</strong></td>
+              <td>
+                Borrows the <a href="https://github.com/google-gemini/gemini-cli">Gemini CLI</a> login (<code>~/.gemini/oauth_creds.json</code>).
+                <span class="why">Reads per-model remaining quota through Google's Code Assist API. Tokens are refreshed in memory only and never stored; Google has retired the free Code Assist tier.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Antigravity</strong></td>
+              <td>
+                Borrows the <a href="https://antigravity.google">Antigravity</a> / <code>agy</code> login (CLI token file or Keychain).
+                <span class="why">Reads per-model remaining quota. Tokens are refreshed in memory only and never stored.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>MiniMax</strong></td>
+              <td>
+                API key + region (Global or China), pasted in Settings.
+                <span class="why">Reads the Token Plan's current session window from <code>/v1/token_plan/remains</code>.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Kimi</strong></td>
+              <td>
+                Borrows the Kimi Code login (<code>~/.kimi/credentials/kimi-code.json</code>).
+                <span class="why">Reads the plan usage plus each windowed limit (5-hour, weekly, …). Tokens are refreshed in memory only and never stored.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Synthetic</strong></td>
+              <td>
+                API key, pasted in Settings.
+                <span class="why">Reads the rolling 5-hour request limit, weekly budget and optional legacy subscription/search quotas.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>DeepSeek</strong></td>
+              <td>
+                API key, pasted in Settings.
+                <span class="why">Reads the account's USD/CNY balance (total, granted and topped-up amounts as reported).</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Mistral</strong></td>
+              <td>
+                Admin API key, pasted in Settings.
+                <span class="why">Reads the Organization's monthly spend against its spend limit. Admin keys require an Enterprise plan; standard inference keys are rejected.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Xiaomi MiMo</strong></td>
+              <td>
+                Browser cookies, pasted in Settings.
+                <span class="why">Reads the console balance plus Token Plan credits from <code>platform.xiaomimimo.com</code>. Copy the <code>Cookie</code> header while signed in; the required cookies are <code>api-platform_serviceToken</code> and <code>userId</code>.</span>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -315,7 +410,7 @@
         <p style="margin:0;">TokenMeter talks only to the providers you configure, and:</p>
         <ul>
           <li>Secrets never leave your Mac — provider tokens and API keys live only in the macOS <strong>Keychain</strong>, never in a settings file.</li>
-          <li><strong>Claude tokens are never stored</strong>: they are read from Claude Code at fetch time, used once, and discarded.</li>
+          <li><strong>Borrowed logins are never stored</strong>: Claude Code, Cursor, Gemini CLI, Antigravity and Kimi Code tokens are read at fetch time, used for the request, and discarded.</li>
           <li><strong>No telemetry</strong>, no analytics, no update phone-home you can't turn off.</li>
         </ul>
       </div>

@@ -7,7 +7,9 @@
 
 A macOS **menu-bar app** that shows, at a glance, how much of each AI
 subscription's usage allowance is left before it resets — Claude, Codex,
-GitHub Copilot, Nous Portal, Ollama Cloud and Venice.ai in one popover.
+GitHub Copilot, Nous Portal, Ollama Cloud, Venice.ai, Z.ai, xAI, Cursor,
+OpenCode, Alibaba Cloud, Gemini, Antigravity, MiniMax, Kimi, Synthetic,
+DeepSeek, Mistral and Xiaomi MiMo in one popover.
 
 **Download & info:** https://kartax.github.io/tokenmeter/ — a notarized
 `.dmg` for macOS 14+. This repo holds everything: the source, the download
@@ -38,13 +40,27 @@ brew install --cask kartax/tap/tokenmeter
 | Nous Portal | **Sign-in** in TokenMeter (device-code browser flow) | Same flow as Codex. |
 | Ollama Cloud | **API key**, pasted in Settings | Create a key on your Ollama dashboard. |
 | Venice.ai | **Admin API key**, pasted in Settings | Inference keys cannot read billing; create an **Admin** key at [venice.ai/settings/api](https://venice.ai/settings/api). Reads the daily DIEM epoch (resets 00:00 UTC) plus bundled, earned and USD credit balances. |
+| Z.ai | **API key**, pasted in Settings | Reads the GLM Coding Plan's 5-hour and weekly token quotas plus the monthly web-search/reader call quota. |
+| xAI | **Management API key + team ID**, pasted in Settings | Reads the team's prepaid USD credit balance (and the postpaid remaining estimate when returned). Inference keys are rejected; create a Management key in the xAI Console. |
+| Cursor | Borrows **Cursor's** local login (desktop `state.vscdb` or the `cursor-agent` Keychain item) | Reads the billing-cycle percentage plus Auto and API sub-windows. Tokens are read per fetch and never stored or refreshed. |
+| OpenCode | **API key**, pasted in Settings | Reads OpenCode Go/Zen rolling 5-hour, weekly and monthly usage percentages. |
+| Alibaba Cloud | **Coding Plan API key** (`sk-sp-…`) + region, pasted in Settings | Reads the Coding Plan's 5-hour, weekly and monthly request quotas from the Model Studio console endpoint. |
+| Gemini | Borrows the **Gemini CLI** login (`~/.gemini/oauth_creds.json`) | Reads per-model remaining quota through Google's Code Assist API. Tokens are refreshed in memory only and never stored; the free Code Assist tier has been retired by Google. |
+| Antigravity | Borrows the **Antigravity / `agy`** login (CLI token file or Keychain) | Reads per-model remaining quota. Tokens are refreshed in memory only and never stored. |
+| MiniMax | **API key** + region (Global or China), pasted in Settings | Reads the Token Plan's current session window from `/v1/token_plan/remains`. |
+| Kimi | Borrows the **Kimi Code** login (`~/.kimi/credentials/kimi-code.json`) | Reads the plan usage plus each windowed limit (5-hour, weekly, …). Tokens are refreshed in memory only and never stored. |
+| Synthetic | **API key**, pasted in Settings | Reads the rolling 5-hour request limit, weekly budget and optional legacy subscription/search quotas. |
+| DeepSeek | **API key**, pasted in Settings | Reads the account's USD/CNY balance (total, granted and topped-up amounts as reported). |
+| Mistral | **Admin API key**, pasted in Settings | Reads the Organization's monthly spend against its spend limit. Admin keys require an Enterprise plan; standard inference keys are rejected. |
+| Xiaomi MiMo | **Browser cookies**, pasted in Settings | Reads the console balance plus Token Plan credits from `platform.xiaomimimo.com`. Copy the `Cookie` header while signed in; the two required cookies are `api-platform_serviceToken` and `userId`. |
 
 ## Privacy
 
 - Provider secrets (tokens, API keys) live **only in the macOS Keychain**,
   never in the config file, never in logs.
-- **Claude tokens are never stored**: read from Claude Code at fetch time,
-  used for one request, discarded.
+- **Borrowed logins are never stored**: Claude Code, Cursor, Gemini CLI,
+  Antigravity and Kimi Code tokens are read at fetch time, used for the
+  request, and discarded.
 - **No telemetry**, no analytics.
 
 ## Build & run
@@ -121,9 +137,14 @@ notarized, stapled `TokenMeter.dmg` and publishes it with
   ([ADR 0004](docs/adr/0004-compiled-in-providers.md)).
 - One Claude Account per Claude Code config directory (several accounts
   require several `CLAUDE_CONFIG_DIR`s).
-- The usage endpoints of Claude, Codex and GitHub Copilot are undocumented and
-  may change; unusual responses surface as "unavailable" rather than wrong
-  numbers.
+- Cursor, Gemini, Antigravity and Kimi require that app or CLI to be signed in
+  on the same Mac; TokenMeter never signs in for them.
+- Mistral's Admin API is Enterprise-only; xAI needs a Management key and team
+  ID; Xiaomi MiMo needs cookies copied from a signed-in browser session.
+- The usage endpoints of Claude, Codex, GitHub Copilot, Cursor, Gemini,
+  Antigravity, Z.ai, Kimi, Alibaba Cloud Coding Plan and Xiaomi MiMo are
+  undocumented and may change; unusual responses surface as "unavailable"
+  rather than wrong numbers.
 
 ## Docs
 
