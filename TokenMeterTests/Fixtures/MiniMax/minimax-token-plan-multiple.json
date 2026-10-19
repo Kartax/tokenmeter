@@ -1,0 +1,19 @@
+{
+  "base_resp": {
+    "status_code": 0
+  },
+  "model_remains": [
+    {
+      "model_name": "general",
+      "current_interval_total_count": 100,
+      "current_interval_usage_count": 50,
+      "plan_name": "First"
+    },
+    {
+      "model_name": "video",
+      "current_interval_total_count": 100,
+      "current_interval_usage_count": 10,
+      "plan_name": "Second"
+    }
+  ]
+}

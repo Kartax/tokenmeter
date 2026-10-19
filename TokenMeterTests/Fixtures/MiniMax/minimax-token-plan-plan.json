@@ -1,0 +1,14 @@
+{
+  "base_resp": {
+    "status_code": 0
+  },
+  "current_subscribe_title": "Token Plan Max",
+  "model_remains": [
+    {
+      "model_name": "general",
+      "current_interval_total_count": 10,
+      "current_interval_usage_count": 5,
+      "plan_name": "Ignored Plan"
+    }
+  ]
+}

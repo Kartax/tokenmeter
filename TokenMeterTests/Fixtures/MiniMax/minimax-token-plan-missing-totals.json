@@ -1,0 +1,12 @@
+{
+  "base_resp": {
+    "status_code": 0
+  },
+  "model_remains": [
+    {
+      "model_name": "general",
+      "current_interval_usage_count": 12,
+      "current_subscribe_title": "Token Plan Plus"
+    }
+  ]
+}

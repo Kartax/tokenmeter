@@ -1,0 +1,14 @@
+{
+  "base_resp": {
+    "status_code": 0
+  },
+  "model_remains": [
+    {
+      "model_name": "general",
+      "current_interval_total_count": 0,
+      "current_interval_usage_count": 0,
+      "current_interval_remaining_percent": 25,
+      "remains_time": "2026-10-18T14:00:00Z"
+    }
+  ]
+}
