@@ -85,15 +85,20 @@
       gap: 8px; margin: 20px 0;
     }
     .badges img { height: 20px; display: block; }
-    .btn-group { margin-top: 24px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-group {
+      margin-top: 24px; display: inline-flex; gap: 1px;
+      border-radius: 12px; overflow: hidden;
+      background: rgba(0, 0, 0, .45);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, .35);
+    }
     .btn {
-      display: inline-block; padding: 12px 26px; border-radius: 10px;
+      display: inline-block; padding: 14px 28px;
       font-weight: 600; text-decoration: none; font-size: 1rem;
       transition: filter .15s ease;
     }
     .btn:hover { filter: brightness(1.12); }
     .btn-download { background: var(--accent); color: #fff; }
-    .btn-gh { border: 1px solid var(--border); color: var(--text); background: var(--panel); }
+    .btn-coffee { background: #ffdd00; color: #000; }
 
     /* Homebrew */
     .brew-install { margin-top: 20px; color: var(--muted); font-size: .9rem; }
@@ -178,8 +183,8 @@
         <a class="btn btn-download" href="https://github.com/Kartax/tokenmeter/releases/latest/download/TokenMeter.dmg">
           Download for macOS
         </a>
-        <a class="btn btn-gh" href="https://github.com/Kartax/tokenmeter">
-          View source
+        <a class="btn btn-coffee" href="https://www.buymeacoffee.com/Kartax" target="_blank" rel="noopener">
+          🍺 Buy me a beer
         </a>
       </div>
       <div class="brew-install">
@@ -203,6 +208,8 @@
       </div>
       <div class="gh-links" style="margin-top:18px; font-size:.9rem;">
         <a href="https://github.com/Kartax/tokenmeter/issues/new">Report an issue</a>
+        <span style="color:var(--muted)"> · </span>
+        <a href="https://github.com/Kartax/tokenmeter">View source</a>
         <span style="color:var(--muted)"> · </span>
         <a href="https://github.com/Kartax/tokenmeter/releases">All releases</a>
       </div>
