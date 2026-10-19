@@ -1,0 +1,18 @@
+{
+  "codingPlanInstanceInfos": [
+    {
+      "planName": "Coding Plan Lite",
+      "codingPlanQuotaInfo": {
+        "per5HourUsedQuota": "250",
+        "per5HourTotalQuota": "1000",
+        "per5HourQuotaNextRefreshTime": "1760806800000",
+        "perWeekUsedQuota": "0",
+        "perWeekTotalQuota": "5000",
+        "perWeekQuotaNextRefreshTime": 1761411600,
+        "perBillMonthUsedQuota": "1000",
+        "perBillMonthTotalQuota": "20000",
+        "perBillMonthQuotaNextRefreshTime": "2026-11-01T00:00:00Z"
+      }
+    }
+  ]
+}
