@@ -1,0 +1,7 @@
+{
+  "total": { "val": "-1234" },
+  "changes": [
+    { "id": "txn-test-1", "amount": { "val": "-1000" } },
+    { "id": "txn-test-2", "amount": { "val": "-234" } }
+  ]
+}
