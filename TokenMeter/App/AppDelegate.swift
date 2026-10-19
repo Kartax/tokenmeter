@@ -80,11 +80,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let store = AccountStore()
     private let router = SettingsRouter()
 
-    /// Static gauge icon; a template image so the system tints it for light/dark menu bars.
+    /// Static cloud/usage mark; a template image so the system tints it for light/dark menu bars.
     private static let icon: NSImage? = {
-        let image = NSImage(systemSymbolName: "gauge.with.dots.needle.33percent",
-                            accessibilityDescription: "TokenMeter")
+        let image = NSImage(named: "StatusIcon")
         image?.isTemplate = true
+        image?.accessibilityDescription = "TokenMeter"
         return image
     }()
 
