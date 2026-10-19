@@ -8,7 +8,7 @@ struct GeminiCredentials: Equatable, Sendable {
     var refreshToken: String?
     /// `expiry_date` from the file (milliseconds since 1970).
     var expiryDate: Date?
-    /// Client credentials from the file, when present; otherwise the public Gemini CLI client is used.
+    /// The OAuth client pair from the file, when present. TokenMeter embeds none of its own.
     var clientID: String?
     var clientSecret: String?
 
@@ -98,10 +98,6 @@ struct GeminiProvider: Provider {
     static let defaultTokenURL = URL(string: "https://oauth2.googleapis.com/token")!
     static let loginHint = "Run `gemini` to sign in"
 
-    /// The public Gemini CLI OAuth client, used when the credentials file has no client pair.
-    static let publicClientID = ""
-    static let publicClientSecret = ""
-
     /// Access tokens this close to expiry are refreshed before use.
     static let expiryBuffer: TimeInterval = 30
 
@@ -169,13 +165,14 @@ struct GeminiProvider: Provider {
                          now: Date) async -> Result<String, ReadingFailure> {
         let clientID: String
         let clientSecret: String
-        if let fileClientID = credentials.clientID, let fileClientSecret = credentials.clientSecret {
-            clientID = fileClientID
-            clientSecret = fileClientSecret
-        } else {
-            clientID = Self.publicClientID
-            clientSecret = Self.publicClientSecret
+        guard let fileClientID = credentials.clientID,
+              let fileClientSecret = credentials.clientSecret else {
+            // Refreshing needs the client pair Gemini CLI logged in with. TokenMeter embeds none;
+            // running `gemini` refreshes the file and the next fetch picks the new token up.
+            return .failure(.loginExpired(hint: Self.loginHint))
         }
+        clientID = fileClientID
+        clientSecret = fileClientSecret
         var request = URLRequest(url: tokenURL)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")

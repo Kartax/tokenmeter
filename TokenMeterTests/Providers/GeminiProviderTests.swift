@@ -77,7 +77,9 @@ final class GeminiProviderTests: XCTestCase {
     func testExpiredTokenIsRefreshedAndRotatedTokenIsNotReturned() async throws {
         let expired = GeminiCredentials(accessToken: "stale-access-token",
                                         refreshToken: "test-refresh-token",
-                                        expiryDate: date("2026-10-19T11:00:00Z"))
+                                        expiryDate: date("2026-10-19T11:00:00Z"),
+                                        clientID: "file-client-id",
+                                        clientSecret: "file-client-secret")
         let result = await GeminiProvider().read(
             account: account, credentials: expired,
             session: HTTPStub.session([
@@ -97,8 +99,8 @@ final class GeminiProviderTests: XCTestCase {
         XCTAssertEqual(token.value(forHTTPHeaderField: "Content-Type"),
                        "application/x-www-form-urlencoded")
         XCTAssertEqual(formFields(HTTPStub.body(of: token)), [
-            "client_id": GeminiProvider.publicClientID,
-            "client_secret": GeminiProvider.publicClientSecret,
+            "client_id": "file-client-id",
+            "client_secret": "file-client-secret",
             "refresh_token": "test-refresh-token",
             "grant_type": "refresh_token",
         ])
@@ -108,18 +110,12 @@ final class GeminiProviderTests: XCTestCase {
                        "Bearer fresh-access-token")
     }
 
-    func testMissingAccessTokenUsesRefreshToken() async throws {
+    func testRefreshWithoutClientPairIsLoginExpired() async {
         let borrowed = GeminiCredentials(accessToken: "", refreshToken: "test-refresh-token")
-        let reading = try await read([
-            tokenRoute: .json(#"{"access_token":"fresh-access-token"}"#),
-            loadRoute: .fixture("gemini-load-code-assist"),
-            quotaRoute: .fixture("gemini-quota"),
-        ], credentials: borrowed).get()
+        let result = await read([:], credentials: borrowed)
 
-        XCTAssertEqual(reading.plan, "Standard")
-        let token = try XCTUnwrap(HTTPStub.requests.first)
-        XCTAssertEqual(token.url?.path, "/token")
-        XCTAssertEqual(formFields(HTTPStub.body(of: token))["refresh_token"], "test-refresh-token")
+        XCTAssertEqual(result, .failure(.loginExpired(hint: "Run `gemini` to sign in")))
+        XCTAssertEqual(HTTPStub.requests, [])
     }
 
     func testRefreshUsesClientCredentialsFromTheFile() async throws {
@@ -140,7 +136,9 @@ final class GeminiProviderTests: XCTestCase {
     func testRefreshRejectionIsLoginExpired() async {
         let expired = GeminiCredentials(accessToken: "stale-access-token",
                                         refreshToken: "test-refresh-token",
-                                        expiryDate: date("2026-10-19T11:00:00Z"))
+                                        expiryDate: date("2026-10-19T11:00:00Z"),
+                                        clientID: "file-client-id",
+                                        clientSecret: "file-client-secret")
         let result = await read([
             tokenRoute: .json(#"{"error":"invalid_grant"}"#, status: 400),
         ], credentials: expired)

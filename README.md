@@ -45,8 +45,8 @@ brew install --cask kartax/tap/tokenmeter
 | Cursor | Borrows **Cursor's** local login (desktop `state.vscdb` or the `cursor-agent` Keychain item) | Reads the billing-cycle percentage plus Auto and API sub-windows. Tokens are read per fetch and never stored; an expired token is refreshed in memory only. |
 | OpenCode | **API key**, pasted in Settings | Reads OpenCode Go/Zen rolling 5-hour, weekly and monthly usage percentages. |
 | Alibaba Cloud | **Coding Plan API key** (`sk-sp-…`) + region, pasted in Settings | Reads the Coding Plan's 5-hour, weekly and monthly request quotas from the Model Studio console endpoint. |
-| Gemini | Borrows the **Gemini CLI** login (`~/.gemini/oauth_creds.json`) | Reads per-model remaining quota through Google's Code Assist API. Tokens are refreshed in memory only and never stored; the free Code Assist tier has been retired by Google. |
-| Antigravity | Borrows the **Antigravity / `agy`** login (CLI token file or Keychain) | Reads per-model remaining quota. Tokens are refreshed in memory only and never stored. |
+| Gemini | Borrows the **Gemini CLI** login (`~/.gemini/oauth_creds.json`) | Reads per-model remaining quota through Google's Code Assist API. Tokens are refreshed in memory only when the borrowed file carries its OAuth client pair, and never stored; the free Code Assist tier has been retired by Google. |
+| Antigravity | Borrows the **Antigravity / `agy`** login (CLI token file or Keychain) | Reads per-model remaining quota. Tokens are refreshed in memory only when the borrowed token carries its OAuth client pair, and never stored. |
 | MiniMax | **API key** + region (Global or China), pasted in Settings | Reads the Token Plan's current session window from `/v1/token_plan/remains`. |
 | Kimi | Borrows the **Kimi Code** login (`~/.kimi/credentials/kimi-code.json`) | Reads the plan usage plus each windowed limit (5-hour, weekly, …). Tokens are refreshed in memory only and never stored. |
 | Synthetic | **API key**, pasted in Settings | Reads the rolling 5-hour request limit, weekly budget and optional legacy subscription/search quotas. |

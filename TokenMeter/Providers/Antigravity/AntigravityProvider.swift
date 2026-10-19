@@ -7,6 +7,9 @@ struct AntigravityCredentials: Equatable, Sendable {
     var accessToken: String
     var refreshToken: String?
     var expiresAt: Date?
+    /// The OAuth client pair from the token file/Keychain, when present. TokenMeter embeds none.
+    var clientID: String? = nil
+    var clientSecret: String? = nil
 }
 
 /// Reads Antigravity's local login: `~/.gemini/antigravity-cli/antigravity-oauth-token`, then the
@@ -65,7 +68,9 @@ struct AntigravityCredentialSource: CredentialSource {
         let expiry = token["expiry"] ?? token["expires_at"] ?? token["expiry_date"]
             ?? token["expiresAt"] ?? token["expiryDate"]
         return AntigravityCredentials(accessToken: accessToken, refreshToken: refreshToken,
-                                      expiresAt: date(from: expiry))
+                                      expiresAt: date(from: expiry),
+                                      clientID: string(token["client_id"]) ?? string(token["clientId"]),
+                                      clientSecret: string(token["client_secret"]) ?? string(token["clientSecret"]))
     }
 
     /// Keychain values may be raw JSON, a `go-keyring-base64:` wrapper, or bare base64 JSON.
@@ -132,10 +137,6 @@ struct AntigravityProvider: Provider {
     static let defaultTokenURL = URL(string: "https://oauth2.googleapis.com/token")!
     static let loginHint = "Open Antigravity or run `agy login`"
 
-    /// The Antigravity Hub OAuth client used by its own sign-in flow.
-    static let clientID = ""
-    static let clientSecret = ""
-
     private static let clientMetadata = #"{"ideType":"ANTIGRAVITY","platform":"MACOS","pluginType":"GEMINI"}"#
 
     /// The instance the app uses (honours the DEBUG `TOKENMETER_ANTIGRAVITY_BASE_URL` override).
@@ -150,10 +151,12 @@ struct AntigravityProvider: Provider {
         -> ProviderReading<AntigravityCredentials> {
         var credentials = credentials
         if credentials.accessToken.isEmpty || Self.isExpired(credentials.expiresAt, now: now) {
-            guard let refreshToken = credentials.refreshToken, !refreshToken.isEmpty else {
+            guard let refreshToken = credentials.refreshToken, !refreshToken.isEmpty,
+                  let clientID = credentials.clientID, let clientSecret = credentials.clientSecret else {
                 return ProviderReading(.failure(.loginExpired(hint: Self.loginHint)))
             }
             switch await refresh(credentials: credentials, refreshToken: refreshToken,
+                                 clientID: clientID, clientSecret: clientSecret,
                                  session: session, now: now) {
             case .success(let refreshed):
                 credentials = refreshed
@@ -198,6 +201,7 @@ struct AntigravityProvider: Provider {
     }
 
     private func refresh(credentials: AntigravityCredentials, refreshToken: String,
+                         clientID: String, clientSecret: String,
                          session: URLSession, now: Date) async
         -> Result<AntigravityCredentials, ReadingFailure> {
         var request = URLRequest(url: tokenURL)
@@ -205,8 +209,8 @@ struct AntigravityProvider: Provider {
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.httpBody = HTTP.formBody([
             ("grant_type", "refresh_token"),
-            ("client_id", Self.clientID),
-            ("client_secret", Self.clientSecret),
+            ("client_id", clientID),
+            ("client_secret", clientSecret),
             ("refresh_token", refreshToken),
         ])
         switch await HTTP.send(request, session: session) {

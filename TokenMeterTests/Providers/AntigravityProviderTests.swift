@@ -74,7 +74,9 @@ final class AntigravityProviderTests: XCTestCase {
     func testExpiredCredentialsAreRefreshedInMemoryOnly() async throws {
         let expired = AntigravityCredentials(accessToken: "stale-access-token",
                                              refreshToken: "test-refresh-token",
-                                             expiresAt: now.addingTimeInterval(-60))
+                                             expiresAt: now.addingTimeInterval(-60),
+                                             clientID: "file-client-id",
+                                             clientSecret: "file-client-secret")
         let session = HTTPStub.session([
             "POST /token": .json(#"{"access_token":"fresh-access-token","expires_in":3600}"#),
             "POST \(modelsPath)": .fixture("antigravity-models"),
@@ -90,8 +92,22 @@ final class AntigravityProviderTests: XCTestCase {
         let form = String(decoding: HTTPStub.body(of: refreshRequest), as: UTF8.self)
         XCTAssertTrue(form.contains("grant_type=refresh_token"))
         XCTAssertTrue(form.contains("refresh_token=test-refresh-token"))
+        XCTAssertTrue(form.contains("client_id=file-client-id"))
+        XCTAssertTrue(form.contains("client_secret=file-client-secret"))
         let modelsRequest = try XCTUnwrap(HTTPStub.requests.first { $0.url?.path == modelsPath })
         XCTAssertEqual(modelsRequest.value(forHTTPHeaderField: "Authorization"), "Bearer fresh-access-token")
+    }
+
+    func testExpiredCredentialsWithoutClientPairAreLoginExpired() async {
+        let expired = AntigravityCredentials(accessToken: "stale-access-token",
+                                             refreshToken: "test-refresh-token",
+                                             expiresAt: now.addingTimeInterval(-60))
+        let result = await AntigravityProvider().read(account: account, credentials: expired,
+                                                      session: HTTPStub.session([:]), now: now)
+
+        XCTAssertEqual(result.outcome,
+                       .failure(.loginExpired(hint: AntigravityProvider.loginHint)))
+        XCTAssertEqual(HTTPStub.requests, [])
     }
 
     func testUnauthorizedIsLoginExpired() async {
@@ -135,11 +151,12 @@ final class AntigravityProviderTests: XCTestCase {
     // MARK: - Borrowed credential parsing
 
     func testTokenFilePayloadParsesNestedTokenAndISOExpiry() {
-        let data = Data(#"{"token":{"access_token":"a","refresh_token":"r","expiry":"2026-10-18T13:00:00Z"},"auth_method":"consumer"}"#.utf8)
+        let data = Data(#"{"token":{"access_token":"a","refresh_token":"r","expiry":"2026-10-18T13:00:00Z","client_id":"cid","client_secret":"cs"},"auth_method":"consumer"}"#.utf8)
 
         XCTAssertEqual(AntigravityCredentialSource.parse(data),
                        AntigravityCredentials(accessToken: "a", refreshToken: "r",
-                                              expiresAt: date("2026-10-18T13:00:00Z")))
+                                              expiresAt: date("2026-10-18T13:00:00Z"),
+                                              clientID: "cid", clientSecret: "cs"))
     }
 
     func testFlatTokenPayloadParsesMillisecondExpiry() {
