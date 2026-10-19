@@ -1,0 +1,6 @@
+{
+  "error": {
+    "message": "Authentication Fails (no such user)",
+    "type": "authentication_error"
+  }
+}

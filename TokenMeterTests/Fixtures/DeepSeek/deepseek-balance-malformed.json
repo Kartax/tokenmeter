@@ -1,0 +1,24 @@
+{
+  "is_available": true,
+  "balance_infos": [
+    {
+      "currency": "USD",
+      "total_balance": "n/a"
+    },
+    {
+      "currency": "CNY",
+      "total_balance": "25.00"
+    },
+    {
+      "currency": "EUR"
+    },
+    {
+      "currency": "",
+      "total_balance": "5.00"
+    },
+    "not an object",
+    {
+      "total_balance": "9.00"
+    }
+  ]
+}
