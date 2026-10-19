@@ -24,6 +24,9 @@ enum ProviderRegistry {
         case .venice:
             CredentialedReader(provider: VeniceProvider.live,
                                source: VeniceProvider.credentialSource)
+        case .zai, .xai, .cursor, .opencode, .alibaba, .gemini, .antigravity,
+             .minimax, .kimi, .synthetic, .deepseek, .mistral, .xiaomi:
+            nil
         }
     }
 

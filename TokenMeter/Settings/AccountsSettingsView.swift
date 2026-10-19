@@ -116,6 +116,9 @@ private struct AddAccountSheet: View {
                 NousAddAccountForm(store: store, onDone: onDone)
             case .venice:
                 VeniceAddAccountForm(store: store, onDone: onDone)
+            case .zai, .xai, .cursor, .opencode, .alibaba, .gemini, .antigravity,
+                 .minimax, .kimi, .synthetic, .deepseek, .mistral, .xiaomi:
+                EmptyView()
             }
         }
         .padding(20)
@@ -186,6 +189,9 @@ private struct AccountDetailView: View {
                 NousAccountSettings(store: store, account: account)
             case .venice:
                 VeniceAccountSettings(store: store, account: account)
+            case .zai, .xai, .cursor, .opencode, .alibaba, .gemini, .antigravity,
+                 .minimax, .kimi, .synthetic, .deepseek, .mistral, .xiaomi:
+                EmptyView()
             }
             HStack {
                 Spacer()

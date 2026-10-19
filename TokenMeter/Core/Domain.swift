@@ -5,6 +5,8 @@ import Foundation
 /// The compiled-in Providers (ADR 0004). Implementations are listed in `ProviderRegistry`.
 enum ProviderKind: String, Codable, CaseIterable, Sendable {
     case claude, codex, copilot, ollama, nous, venice
+    case zai, xai, cursor, opencode, alibaba, gemini, antigravity
+    case minimax, kimi, synthetic, deepseek, mistral, xiaomi
 
     var displayName: String {
         switch self {
@@ -14,6 +16,19 @@ enum ProviderKind: String, Codable, CaseIterable, Sendable {
         case .ollama: "Ollama Cloud"
         case .nous: "Nous Portal"
         case .venice: "Venice.ai"
+        case .zai: "Z.ai"
+        case .xai: "xAI"
+        case .cursor: "Cursor"
+        case .opencode: "OpenCode"
+        case .alibaba: "Alibaba Cloud"
+        case .gemini: "Gemini"
+        case .antigravity: "Antigravity"
+        case .minimax: "MiniMax"
+        case .kimi: "Kimi"
+        case .synthetic: "Synthetic"
+        case .deepseek: "DeepSeek"
+        case .mistral: "Mistral"
+        case .xiaomi: "Xiaomi MiMo"
         }
     }
 
@@ -26,6 +41,19 @@ enum ProviderKind: String, Codable, CaseIterable, Sendable {
         case .ollama: "cloud"
         case .nous: "brain"
         case .venice: "water.waves"
+        case .zai: "sparkles"
+        case .xai: "x.circle"
+        case .cursor: "cursorarrow.rays"
+        case .opencode: "chevron.left.forwardslash.chevron.right"
+        case .alibaba: "cloud"
+        case .gemini: "circle.hexagongrid"
+        case .antigravity: "arrow.up.circle"
+        case .minimax: "m.circle"
+        case .kimi: "moon.stars"
+        case .synthetic: "atom"
+        case .deepseek: "magnifyingglass"
+        case .mistral: "wind"
+        case .xiaomi: "cpu"
         }
     }
 }
