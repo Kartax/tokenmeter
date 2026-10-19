@@ -1,0 +1,37 @@
+{
+  "models": {
+    "claude-sonnet-4-5": {
+      "displayName": "Claude Sonnet 4.5",
+      "model": "claude-sonnet-4-5",
+      "quotaInfo": {
+        "remainingFraction": 0.75,
+        "resetTime": "2026-10-18T17:00:00Z"
+      }
+    },
+    "gemini-3-pro-high": {
+      "displayName": "Gemini 3 Pro",
+      "model": "gemini-3-pro-high",
+      "quotaInfo": {
+        "remainingFraction": 0.25,
+        "resetTime": "2026-10-18T16:30:00Z"
+      }
+    },
+    "internal-rollout": {
+      "displayName": "Internal Rollout",
+      "model": "internal-rollout",
+      "isInternal": true,
+      "quotaInfo": {
+        "remainingFraction": 0.1,
+        "resetTime": "2026-10-18T16:00:00Z"
+      }
+    },
+    "unnamed-model": {
+      "displayName": "   ",
+      "model": "unnamed-model",
+      "quotaInfo": {
+        "remainingFraction": 0.9,
+        "resetTime": "2026-10-18T15:00:00Z"
+      }
+    }
+  }
+}
