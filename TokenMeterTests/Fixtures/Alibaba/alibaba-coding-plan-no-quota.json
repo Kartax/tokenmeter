@@ -1,0 +1,13 @@
+{
+  "data": {
+    "successResponse": {
+      "codingPlanInstanceInfos": [
+        {
+          "instanceName": "coding-plan-active",
+          "planName": "Coding Plan Pro",
+          "status": "VALID"
+        }
+      ]
+    }
+  }
+}

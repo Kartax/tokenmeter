@@ -1,0 +1,24 @@
+{
+  "data": {
+    "successResponse": {
+      "codingPlanInstanceInfos": [
+        {
+          "instanceName": "coding-plan-team",
+          "planName": "Coding Plan Pro",
+          "status": "VALID",
+          "codingPlanQuotaInfo": {
+            "per5HourUsedQuota": 125,
+            "per5HourTotalQuota": 1000,
+            "per5HourQuotaNextRefreshTime": "2026-10-18T17:00:00Z",
+            "perWeekUsedQuota": 2500,
+            "perWeekTotalQuota": 10000,
+            "perWeekQuotaNextRefreshTime": "2026-10-25T00:00:00Z",
+            "perBillMonthUsedQuota": 5000,
+            "perBillMonthTotalQuota": 40000,
+            "perBillMonthQuotaNextRefreshTime": "2026-11-01T00:00:00Z"
+          }
+        }
+      ]
+    }
+  }
+}
