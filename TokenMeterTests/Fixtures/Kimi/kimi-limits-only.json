@@ -1,0 +1,29 @@
+{
+  "limits": [
+    {
+      "window": { "duration": 60, "timeUnit": "TIME_UNIT_MINUTE" },
+      "detail": {
+        "limit": "100",
+        "remaining": "90",
+        "resetTime": "2026-10-18T13:00:00Z"
+      }
+    },
+    {
+      "window": { "duration": 300, "timeUnit": "TIME_UNIT_MINUTE" },
+      "detail": {
+        "limit": "100",
+        "remaining": "20",
+        "resetTime": "2026-10-18T17:00:00Z"
+      }
+    },
+    {
+      "window": { "duration": 7, "timeUnit": "TIME_UNIT_DAY" },
+      "detail": {
+        "limit": "1000",
+        "remaining": "700",
+        "resetTime": "2026-10-25T00:00:00Z"
+      }
+    }
+  ],
+  "user": { "membership": { "level": "LEVEL_FREE" } }
+}
