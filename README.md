@@ -7,7 +7,7 @@
 
 A macOS **menu-bar app** that shows, at a glance, how much of each AI
 subscription's usage allowance is left before it resets — Claude, Codex,
-Nous Portal, Ollama Cloud and Venice.ai in one popover.
+GitHub Copilot, Nous Portal, Ollama Cloud and Venice.ai in one popover.
 
 **Download & info:** https://kartax.github.io/tokenmeter/ — a notarized
 `.dmg` for macOS 14+. This repo holds everything: the source, the download
@@ -34,6 +34,7 @@ brew install --cask kartax/tap/tokenmeter
 |----------|----------------------|-------|
 | Claude | Borrows **Claude Code's** login (its Keychain token, read per fetch) | No Claude sign-in of its own; tokens are never stored or refreshed — [ADR 0001](docs/adr/0001-claude-credentials-borrowed-from-claude-code.md). Stale when Claude Code hasn't run for ~8 h. |
 | Codex | **Sign-in** in TokenMeter (device-code browser flow) | Own OAuth grant, stored and rotated in the Keychain — [ADR 0003](docs/adr/0003-own-device-code-oauth-for-codex-and-nous.md). |
+| GitHub Copilot | **Sign-in** in TokenMeter (GitHub device-code browser flow) | Reads the monthly AI-credit allowance; Free plans show chat and completion limits, and org-managed seats show their plan plus any personal credits GitHub reports. Token stored in the Keychain. |
 | Nous Portal | **Sign-in** in TokenMeter (device-code browser flow) | Same flow as Codex. |
 | Ollama Cloud | **API key**, pasted in Settings | Create a key on your Ollama dashboard. |
 | Venice.ai | **Admin API key**, pasted in Settings | Inference keys cannot read billing; create an **Admin** key at [venice.ai/settings/api](https://venice.ai/settings/api). Reads the daily DIEM epoch (resets 00:00 UTC) plus bundled, earned and USD credit balances. |
@@ -120,8 +121,9 @@ notarized, stapled `TokenMeter.dmg` and publishes it with
   ([ADR 0004](docs/adr/0004-compiled-in-providers.md)).
 - One Claude Account per Claude Code config directory (several accounts
   require several `CLAUDE_CONFIG_DIR`s).
-- The usage endpoints of Claude and Codex are undocumented and may change;
-  unusual responses surface as "unavailable" rather than wrong numbers.
+- The usage endpoints of Claude, Codex and GitHub Copilot are undocumented and
+  may change; unusual responses surface as "unavailable" rather than wrong
+  numbers.
 
 ## Docs
 

@@ -110,6 +110,8 @@ private struct AddAccountSheet: View {
                 ClaudeAddAccountForm(store: store, onDone: onDone)
             case .codex:
                 CodexAddAccountForm(store: store, onDone: onDone)
+            case .copilot:
+                CopilotAddAccountForm(store: store, onDone: onDone)
             case .nous:
                 NousAddAccountForm(store: store, onDone: onDone)
             case .venice:
@@ -178,6 +180,8 @@ private struct AccountDetailView: View {
                 ClaudeAccountSettings(account: account)
             case .codex:
                 CodexAccountSettings(store: store, account: account)
+            case .copilot:
+                CopilotAccountSettings(store: store, account: account)
             case .nous:
                 NousAccountSettings(store: store, account: account)
             case .venice:

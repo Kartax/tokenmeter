@@ -4,12 +4,13 @@ import Foundation
 
 /// The compiled-in Providers (ADR 0004). Implementations are listed in `ProviderRegistry`.
 enum ProviderKind: String, Codable, CaseIterable, Sendable {
-    case claude, codex, ollama, nous, venice
+    case claude, codex, copilot, ollama, nous, venice
 
     var displayName: String {
         switch self {
         case .claude: "Claude"
         case .codex: "Codex"
+        case .copilot: "GitHub Copilot"
         case .ollama: "Ollama Cloud"
         case .nous: "Nous Portal"
         case .venice: "Venice.ai"
@@ -21,6 +22,7 @@ enum ProviderKind: String, Codable, CaseIterable, Sendable {
         switch self {
         case .claude: "sparkle"
         case .codex: "chevron.left.forwardslash.chevron.right"
+        case .copilot: "curlybraces"
         case .ollama: "cloud"
         case .nous: "brain"
         case .venice: "water.waves"

@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>TokenMeter — AI subscription usage in your macOS menu bar</title>
-  <meta name="description" content="TokenMeter is a free macOS menu-bar app that shows, at a glance, how much of each AI subscription's usage allowance is left before it resets. Claude, Codex, Nous Portal, Ollama and Venice.ai in one popover." />
-  <meta name="keywords" content="TokenMeter, macOS menu bar, Claude usage, Codex usage, Claude rate limits, AI subscription monitor, Ollama usage, Nous Portal, Venice.ai usage, DIEM, usage meter" />
+  <meta name="description" content="TokenMeter is a free macOS menu-bar app that shows, at a glance, how much of each AI subscription's usage allowance is left before it resets. Claude, Codex, GitHub Copilot, Nous Portal, Ollama and Venice.ai in one popover." />
+  <meta name="keywords" content="TokenMeter, macOS menu bar, Claude usage, Codex usage, GitHub Copilot usage, Claude rate limits, AI subscription monitor, Ollama usage, Nous Portal, Venice.ai usage, DIEM, usage meter" />
   <link rel="canonical" href="https://kartax.github.io/tokenmeter/" />
   <meta name="robots" content="index, follow" />
   <meta name="google-site-verification" content="BdalF3KEWiHYoNYg3e8o9PL3c_POPEoegzsFeXHF7Ek" />
@@ -274,6 +274,13 @@
               <td>
                 Sign-in inside TokenMeter (device-code browser flow).
                 <span class="why">One click in Settings' "+" menu, then approve in the browser — see <a href="https://github.com/Kartax/tokenmeter/blob/main/docs/adr/0003-own-device-code-oauth-for-codex-and-nous.md">ADR 0003</a>.</span>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>GitHub Copilot</strong></td>
+              <td>
+                Sign-in inside TokenMeter (GitHub device-code browser flow).
+                <span class="why">Reads the monthly AI-credit allowance; Free plans show chat and completion limits, and org-managed seats show their plan plus any personal credits GitHub reports. The token stays in your Keychain.</span>
               </td>
             </tr>
             <tr>
