@@ -25,17 +25,30 @@ final class DisplayFormatTests: XCTestCase {
         XCTAssertEqual(format.resetTime(date("2026-10-18T11:00:00Z"), now: now), "now")
     }
 
-    func testCreditBalanceWithAllowanceAndRenewal() {
+    func testCreditDetailShowsPercentUsedAndRenewal() {
         let balance = CreditBalance(id: "included", title: "Monthly credits", remaining: Decimal(string: "41.2")!,
                                     allowance: 60, currency: "USD", renewsAt: date("2026-11-03T09:30:00Z"),
                                     isMain: true)
-        XCTAssertEqual(format.creditLine(balance, now: now), "$41.20 of $60 left, renews 3 Nov")
+        XCTAssertEqual(format.creditDetail(balance, now: now), "31% used · renews 3 Nov")
+    }
+
+    func testCreditDetailOmitsMissingRenewal() {
+        let balance = CreditBalance(id: "included", title: "Monthly credits", remaining: Decimal(string: "41.2")!,
+                                    allowance: 60, currency: "USD", renewsAt: nil, isMain: true)
+        XCTAssertEqual(format.creditDetail(balance, now: now), "31% used")
     }
 
     func testCreditBalanceWithoutAllowance() {
         let balance = CreditBalance(id: "purchased", title: "Purchased credits", remaining: 25,
                                     allowance: nil, currency: "USD", renewsAt: nil, isMain: false)
         XCTAssertEqual(format.creditLine(balance, now: now), "$25 left")
+    }
+
+    func testCreditBalanceWithoutAllowanceIncludesRenewal() {
+        let balance = CreditBalance(id: "premium", title: "Premium requests", remaining: 25,
+                                    allowance: nil, currency: "USD", renewsAt: date("2026-11-03T09:30:00Z"),
+                                    isMain: true)
+        XCTAssertEqual(format.creditLine(balance, now: now), "$25 left, renews 3 Nov")
     }
 
     func testNonMonetaryCreditsAreCountedNotPriced() {

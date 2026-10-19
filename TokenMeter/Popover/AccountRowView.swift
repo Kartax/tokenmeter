@@ -143,8 +143,8 @@ private struct QuotaView: View {
     }
 }
 
-/// A Credit balance: title and, when the Provider reports an allowance, percent used with a bar,
-/// followed by the remaining amount.
+/// A Credit balance: title and, when the Provider reports an allowance, percent used and renewal
+/// above a bar; balances without an allowance stay one line.
 private struct CreditView: View {
     var credit: CreditBalance
     var now: Date
@@ -154,8 +154,8 @@ private struct CreditView: View {
             HStack {
                 Text(credit.title).font(.caption)
                 Spacer()
-                if let percentUsed = credit.percentUsed {
-                    Text("\(Int(percentUsed.rounded()))% used")
+                if credit.percentUsed != nil {
+                    Text(DisplayFormat().creditDetail(credit, now: now))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -163,8 +163,9 @@ private struct CreditView: View {
             if let percentUsed = credit.percentUsed {
                 UsageBar(fraction: percentUsed / 100,
                          color: UsageLevel(percentUsed: percentUsed).color)
+            } else {
+                Text(DisplayFormat().creditLine(credit, now: now)).font(.callout)
             }
-            Text(DisplayFormat().creditLine(credit, now: now)).font(.callout)
         }
     }
 }

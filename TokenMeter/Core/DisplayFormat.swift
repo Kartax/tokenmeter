@@ -20,17 +20,24 @@ struct DisplayFormat {
         return string(date, format: interval < 7 * 86400 ? "EEE HH:mm" : "d MMM")
     }
 
-    /// "$41.20 of $60 left, renews 3 Nov"; parts are omitted when unknown.
+    /// "$25 left, renews 3 Nov" for a balance without allowance; parts are omitted when unknown.
     func creditLine(_ balance: CreditBalance, now: Date) -> String {
-        var line = money(balance.remaining, currency: balance.currency)
-        if let allowance = balance.allowance {
-            line += " of \(money(allowance, currency: balance.currency))"
-        }
-        line += " left"
+        var line = "\(money(balance.remaining, currency: balance.currency)) left"
         if let renewsAt = balance.renewsAt {
             line += ", renews \(resetTime(renewsAt, now: now))"
         }
         return line
+    }
+
+    /// "31% used · renews 3 Nov" for a balance with an allowance; the renewal part is omitted
+    /// when unknown.
+    func creditDetail(_ balance: CreditBalance, now: Date) -> String {
+        guard let percentUsed = balance.percentUsed else { return "" }
+        var text = "\(Int(percentUsed.rounded()))% used"
+        if let renewsAt = balance.renewsAt {
+            text += " · renews \(resetTime(renewsAt, now: now))"
+        }
+        return text
     }
 
     /// Whole amounts without decimals ("$60"), others with two ("$41.20"); Provider credits are
