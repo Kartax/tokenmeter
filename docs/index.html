@@ -143,12 +143,59 @@
     .caption { color: var(--muted); font-size: .85rem; text-align: center; margin: 10px 0 0; }
     .lede { color: var(--muted); margin: 0; }
 
-    /* Providers table */
-    .tablewrap { overflow-x: auto; }
-    table { border-collapse: collapse; width: 100%; font-size: .95rem; }
-    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
-    th { color: var(--muted); font-weight: 600; font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
-    td .why { color: var(--muted); font-size: .85rem; display: block; }
+    /* Providers grid */
+    .providers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 10px;
+    }
+    .provider-card {
+      display: flex; align-items: center; gap: 11px;
+      min-height: 62px; padding: 12px 14px;
+      background: rgba(255, 255, 255, .03);
+      background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .015));
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      transition: border-color .15s ease, transform .15s ease, background .15s ease;
+    }
+    .provider-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255, 255, 255, .2);
+      border-color: color-mix(in srgb, var(--brand) 45%, var(--border));
+      background: linear-gradient(180deg,
+        color-mix(in srgb, var(--brand) 10%, rgba(255, 255, 255, .02)),
+        rgba(255, 255, 255, .015));
+    }
+    .provider-icon {
+      width: 38px; height: 38px; flex: none;
+      display: grid; place-items: center;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .045);
+      background: color-mix(in srgb, var(--brand) 14%, var(--panel));
+      border: 1px solid var(--border);
+      border-color: color-mix(in srgb, var(--brand) 24%, var(--border));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+    }
+    .provider-icon::before {
+      content: ""; width: 22px; height: 22px;
+      background: var(--brand);
+      -webkit-mask-image: var(--icon);
+      -webkit-mask-position: center;
+      -webkit-mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-image: var(--icon);
+      mask-position: center;
+      mask-size: contain;
+      mask-repeat: no-repeat;
+    }
+    .provider-name { font-weight: 600; font-size: .93rem; line-height: 1.25; }
+    @media (max-width: 520px) and (min-width: 360px) {
+      .providers-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .provider-card { gap: 9px; padding: 10px 11px; }
+      .provider-icon { width: 32px; height: 32px; border-radius: 9px; }
+      .provider-icon::before { width: 19px; height: 19px; }
+      .provider-name { font-size: .86rem; }
+    }
 
     /* Privacy */
     .panel {
@@ -255,152 +302,87 @@
     </section>
 
     <section id="providers">
-      <h2>Providers and authentication</h2>
+      <h2>Supported providers</h2>
       <p class="lede" style="margin-bottom:18px;">
-        Nineteen providers, one popover. Use an API key, sign in with a device
-        code, or let TokenMeter borrow the login your coding tool already has.
+        Nineteen providers, one popover. Add an account for each service you use.
       </p>
-      <div class="tablewrap">
-        <table>
-          <thead>
-            <tr><th>Provider</th><th>How it authenticates</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Claude</strong></td>
-              <td>
-                Borrows the login of <a href="https://claude.com/product/claude-code">Claude Code</a>, the official CLI.
-                <span class="why">TokenMeter has no Claude sign-in of its own and never stores or refreshes Claude tokens — see <a href="https://github.com/Kartax/tokenmeter/blob/main/docs/adr/0001-claude-credentials-borrowed-from-claude-code.md">ADR 0001</a>.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Codex</strong></td>
-              <td>
-                Sign-in inside TokenMeter (device-code browser flow).
-                <span class="why">One click in Settings' "+" menu, then approve in the browser — see <a href="https://github.com/Kartax/tokenmeter/blob/main/docs/adr/0003-own-device-code-oauth-for-codex-and-nous.md">ADR 0003</a>.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>GitHub Copilot</strong></td>
-              <td>
-                Sign-in inside TokenMeter (GitHub device-code browser flow).
-                <span class="why">Reads the monthly AI-credit allowance; Free plans show chat and completion limits, and org-managed seats show their plan plus any personal credits GitHub reports. The token stays in your Keychain.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Nous Portal</strong></td>
-              <td>
-                Sign-in inside TokenMeter (device-code browser flow).
-                <span class="why">Same flow as Codex; tokens are stored and rotated in the Keychain.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Ollama Cloud</strong></td>
-              <td>
-                API key, pasted in Settings.
-                <span class="why">Create a key on your Ollama dashboard and add it as an account.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Venice.ai</strong></td>
-              <td>
-                <strong>Admin</strong> API key, pasted in Settings.
-                <span class="why">Inference keys cannot read billing. Create an Admin key in <a href="https://venice.ai/settings/api">Venice's API settings</a>; TokenMeter draws the daily DIEM epoch (refreshed at 00:00 UTC) as a progress bar and lists bundled, earned and USD credit balances.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Z.ai</strong></td>
-              <td>
-                API key, pasted in Settings.
-                <span class="why">Reads the GLM Coding Plan's 5-hour and weekly token quotas plus the monthly web-search/reader call quota.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>xAI</strong></td>
-              <td>
-                Management API key + team ID, pasted in Settings.
-                <span class="why">Reads the team's prepaid USD credit balance (and the postpaid remaining estimate when returned). Inference keys are rejected; create a Management key in the xAI Console.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Cursor</strong></td>
-              <td>
-                Borrows Cursor's local login (desktop <code>state.vscdb</code> or the <code>cursor-agent</code> Keychain item).
-                <span class="why">Reads the billing-cycle percentage plus Auto and API sub-windows. Tokens are read per fetch and never stored; an expired token is refreshed in memory only.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>OpenCode</strong></td>
-              <td>
-                API key, pasted in Settings.
-                <span class="why">Reads OpenCode Go/Zen rolling 5-hour, weekly and monthly usage percentages.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Alibaba Cloud</strong></td>
-              <td>
-                Coding Plan API key (<code>sk-sp-…</code>) + region, pasted in Settings.
-                <span class="why">Reads the Coding Plan's 5-hour, weekly and monthly request quotas from the Model Studio console endpoint.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Gemini</strong></td>
-              <td>
-                Borrows the <a href="https://github.com/google-gemini/gemini-cli">Gemini CLI</a> login (<code>~/.gemini/oauth_creds.json</code>).
-                <span class="why">Reads per-model remaining quota through Google's Code Assist API. Tokens are refreshed in memory only and never stored; Google has retired the free Code Assist tier.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Antigravity</strong></td>
-              <td>
-                Borrows the <a href="https://antigravity.google">Antigravity</a> / <code>agy</code> login (CLI token file or Keychain).
-                <span class="why">Reads per-model remaining quota. Tokens are refreshed in memory only and never stored.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>MiniMax</strong></td>
-              <td>
-                API key + region (Global or China), pasted in Settings.
-                <span class="why">Reads the Token Plan's current session window from <code>/v1/token_plan/remains</code>.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Kimi</strong></td>
-              <td>
-                Borrows the Kimi Code login (<code>~/.kimi/credentials/kimi-code.json</code>).
-                <span class="why">Reads the plan usage plus each windowed limit (5-hour, weekly, …). Tokens are refreshed in memory only and never stored.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Synthetic</strong></td>
-              <td>
-                API key, pasted in Settings.
-                <span class="why">Reads the rolling 5-hour request limit, weekly budget and optional legacy subscription/search quotas.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>DeepSeek</strong></td>
-              <td>
-                API key, pasted in Settings.
-                <span class="why">Reads the account's USD/CNY balance (total, granted and topped-up amounts as reported).</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Mistral</strong></td>
-              <td>
-                Admin API key, pasted in Settings.
-                <span class="why">Reads the Organization's monthly spend against its spend limit. Admin keys require an Enterprise plan; standard inference keys are rejected.</span>
-              </td>
-            </tr>
-            <tr>
-              <td><strong>Xiaomi MiMo</strong></td>
-              <td>
-                Browser cookies, pasted in Settings.
-                <span class="why">Reads the console balance plus Token Plan credits from <code>platform.xiaomimimo.com</code>. Copy the <code>Cookie</code> header while signed in; the required cookies are <code>api-platform_serviceToken</code> and <code>userId</code>.</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="providers-grid">
+        <div class="provider-card" style="--brand: #FF6A00; --icon: url('icons/alibabacloud.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Alibaba Cloud</span>
+        </div>
+        <div class="provider-card" style="--brand: #8AB4F8; --icon: url('icons/antigravity.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Antigravity</span>
+        </div>
+        <div class="provider-card" style="--brand: #D97757; --icon: url('icons/claude.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Claude</span>
+        </div>
+        <div class="provider-card" style="--brand: #10A37F; --icon: url('icons/codex.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Codex</span>
+        </div>
+        <div class="provider-card" style="--brand: #E6E8EA; --icon: url('icons/cursor.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Cursor</span>
+        </div>
+        <div class="provider-card" style="--brand: #4D6BFE; --icon: url('icons/deepseek.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">DeepSeek</span>
+        </div>
+        <div class="provider-card" style="--brand: #8E75FF; --icon: url('icons/googlegemini.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Gemini</span>
+        </div>
+        <div class="provider-card" style="--brand: #E6E8EA; --icon: url('icons/githubcopilot.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">GitHub Copilot</span>
+        </div>
+        <div class="provider-card" style="--brand: #7C5CFF; --icon: url('icons/kimi.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Kimi</span>
+        </div>
+        <div class="provider-card" style="--brand: #F23F5D; --icon: url('icons/minimax.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">MiniMax</span>
+        </div>
+        <div class="provider-card" style="--brand: #FF7000; --icon: url('icons/mistralai.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Mistral</span>
+        </div>
+        <div class="provider-card" style="--brand: #E8A87C; --icon: url('icons/nous.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Nous Portal</span>
+        </div>
+        <div class="provider-card" style="--brand: #E6E8EA; --icon: url('icons/ollama.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Ollama Cloud</span>
+        </div>
+        <div class="provider-card" style="--brand: #E6E8EA; --icon: url('icons/opencode.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">OpenCode</span>
+        </div>
+        <div class="provider-card" style="--brand: #A78BFA; --icon: url('icons/synthetic.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Synthetic</span>
+        </div>
+        <div class="provider-card" style="--brand: #14B8A6; --icon: url('icons/venice.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Venice.ai</span>
+        </div>
+        <div class="provider-card" style="--brand: #E6E8EA; --icon: url('icons/xai.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">xAI</span>
+        </div>
+        <div class="provider-card" style="--brand: #FF6900; --icon: url('icons/xiaomi.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Xiaomi MiMo</span>
+        </div>
+        <div class="provider-card" style="--brand: #4C8DFF; --icon: url('icons/zai.svg')">
+          <span class="provider-icon" aria-hidden="true"></span>
+          <span class="provider-name">Z.ai</span>
+        </div>
       </div>
     </section>
 
