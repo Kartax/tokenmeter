@@ -115,4 +115,46 @@ final class CursorProviderTests: XCTestCase {
         let result = await read([planRoute: .json(#"{}"#)])
         XCTAssertEqual(result, .failure(.unavailable("Unexpected response")))
     }
+
+    func testExpiredJWTIsRefreshedInMemory() async throws {
+        let expired = jwt(expiringAt: now.addingTimeInterval(-60))
+        let credentials = CursorCredentials(accessToken: expired, refreshToken: "test-refresh-token")
+        let result = await CursorProvider().read(
+            account: account, credentials: credentials,
+            session: HTTPStub.session([
+                "POST /oauth/token": .json(#"{"access_token":"refreshed-token","shouldLogout":false}"#),
+                planRoute: .fixture("cursor-plan"),
+                usageRoute: .fixture("cursor-usage"),
+            ]), now: now).outcome
+        _ = try result.get()
+
+        XCTAssertEqual(HTTPStub.requests.first?.url?.path, "/oauth/token")
+        let body = try XCTUnwrap(HTTPStub.requests.first.flatMap(HTTPStub.body(of:)))
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+        XCTAssertEqual(object["client_id"] as? String, CursorProvider.clientID)
+        XCTAssertEqual(object["refresh_token"] as? String, "test-refresh-token")
+        let plan = try XCTUnwrap(HTTPStub.requests.first { $0.url?.path.hasSuffix("GetPlanInfo") == true })
+        XCTAssertEqual(plan.value(forHTTPHeaderField: "Authorization"), "Bearer refreshed-token")
+    }
+
+    func testRefreshLogoutIsLoginExpired() async {
+        let expired = jwt(expiringAt: now.addingTimeInterval(-60))
+        let result = await CursorProvider().read(
+            account: account,
+            credentials: CursorCredentials(accessToken: expired, refreshToken: "test-refresh-token"),
+            session: HTTPStub.session([
+                "POST /oauth/token": .json(#"{"access_token":"","shouldLogout":true}"#),
+            ]), now: now).outcome
+        XCTAssertEqual(result, .failure(.loginExpired(hint: CursorProvider.loginHint)))
+    }
+
+    /// A minimal unsigned JWT whose only meaningful claim is `exp`.
+    private func jwt(expiringAt date: Date) -> String {
+        let payload = try! JSONSerialization.data(withJSONObject: ["exp": date.timeIntervalSince1970])
+        let encoded = payload.base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+        return "header.\(encoded).signature"
+    }
 }

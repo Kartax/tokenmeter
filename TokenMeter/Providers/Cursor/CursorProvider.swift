@@ -4,11 +4,17 @@ import Foundation
 /// stores, copies or refreshes this token. It lives in memory for the requests of one Reading.
 struct CursorCredentials: Equatable, Sendable {
     var accessToken: String
+    var refreshToken: String?
+
+    init(accessToken: String, refreshToken: String? = nil) {
+        self.accessToken = accessToken
+        self.refreshToken = refreshToken
+    }
 }
 
 extension CursorCredentials: CustomStringConvertible, CustomDebugStringConvertible {
     /// Never reveals the token, even if the value ends up in a log or debugger print.
-    var description: String { "CursorCredentials(accessToken: <redacted>)" }
+    var description: String { "CursorCredentials(accessToken: <redacted>, refreshToken: <redacted>)" }
     var debugDescription: String { description }
 }
 
@@ -21,20 +27,28 @@ struct CursorCredentialSource: CredentialSource {
         NSHomeDirectory() + "/Library/Application Support/Cursor/User/globalStorage/state.vscdb"
     }
 
-    static let databaseKey = "cursorAuth/accessToken"
+    static let databaseAccessKey = "cursorAuth/accessToken"
+    static let databaseRefreshKey = "cursorAuth/refreshToken"
     static let keychainService = "cursor-access-token"
+    static let keychainRefreshService = "cursor-refresh-token"
 
     /// Injected so the lookup order can be exercised without Cursor installed.
-    var databaseToken: @Sendable (_ path: String) -> String? = CursorCredentialSource.readDatabaseToken
-    var keychainItem: @Sendable () throws -> Data? = CursorCredentialSource.readKeychainItem
+    var databaseValue: @Sendable (_ path: String, _ key: String) -> String? =
+        CursorCredentialSource.readDatabaseValue
+    var keychainItem: @Sendable (_ service: String) throws -> Data? =
+        CursorCredentialSource.readKeychainItem
 
     func load(for account: Account) -> Result<CursorCredentials, ReadingFailure> {
-        if let token = databaseToken(Self.databasePath), !token.isEmpty {
-            return .success(CursorCredentials(accessToken: token))
+        let access = databaseValue(Self.databasePath, Self.databaseAccessKey)
+        let refresh = databaseValue(Self.databasePath, Self.databaseRefreshKey)
+        if access?.isEmpty == false || refresh?.isEmpty == false {
+            return .success(CursorCredentials(accessToken: access ?? "", refreshToken: refresh))
         }
         do {
-            if let data = try keychainItem(), let token = Self.parse(data) {
-                return .success(CursorCredentials(accessToken: token))
+            let accessToken = try keychainItem(Self.keychainService).flatMap(Self.parse)
+            let refreshToken = try keychainItem(Self.keychainRefreshService).flatMap(Self.parse)
+            if accessToken != nil || refreshToken != nil {
+                return .success(CursorCredentials(accessToken: accessToken ?? "", refreshToken: refreshToken))
             }
         } catch let failure as KeychainStore.Failure where failure.cursorIsAccessDenied {
             return .failure(.unavailable("Keychain access denied — allow TokenMeter in the prompt"))
@@ -51,13 +65,13 @@ struct CursorCredentialSource: CredentialSource {
     func delete(for account: Account) throws {}
 
     /// Runs the read-only lookup through the system `sqlite3` binary (the app is not sandboxed).
-    @Sendable static func readDatabaseToken(at path: String) -> String? {
+    @Sendable static func readDatabaseValue(at path: String, key: String) -> String? {
         guard FileManager.default.fileExists(atPath: path) else { return nil }
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/sqlite3")
         process.arguments = [
             path,
-            "SELECT value FROM ItemTable WHERE key='\(databaseKey)' LIMIT 1;",
+            "SELECT value FROM ItemTable WHERE key='\(key)' LIMIT 1;",
         ]
         let output = Pipe()
         process.standardOutput = output
@@ -76,10 +90,10 @@ struct CursorCredentialSource: CredentialSource {
 
     /// The generic-password item Cursor's agent login writes; no account filter, so it matches
     /// regardless of which macOS user attribute Cursor used.
-    @Sendable static func readKeychainItem() throws -> Data? {
+    @Sendable static func readKeychainItem(service: String) throws -> Data? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: keychainService,
+            kSecAttrService as String: service,
             kSecMatchLimit as String: kSecMatchLimitOne,
             kSecReturnData as String: true,
         ]
@@ -129,15 +143,23 @@ struct CursorProvider: Provider {
 
     func read(account: Account, credentials: CursorCredentials, session: URLSession, now: Date) async
         -> ProviderReading<CursorCredentials> {
+        let accessToken: String
+        switch await tokenForRequest(credentials, session: session, now: now) {
+        case .failure(let failure):
+            return ProviderReading(.failure(failure))
+        case .success(let token):
+            accessToken = token
+        }
+
         let plan: PlanInfo
-        switch await fetchPlan(credentials, session: session, now: now) {
+        switch await fetchPlan(accessToken, session: session, now: now) {
         case .failure(let failure):
             return ProviderReading(.failure(failure))
         case .success(let info):
             plan = info
         }
 
-        switch await fetchUsage(credentials, session: session, now: now) {
+        switch await fetchUsage(accessToken, session: session, now: now) {
         case .failure(let failure):
             return ProviderReading(.failure(failure))
         case .success(let usage):
@@ -149,21 +171,93 @@ struct CursorProvider: Provider {
         }
     }
 
+    // MARK: - Token refresh (in memory only)
+
+    /// The Cursor CLI's public OAuth client; the refresh endpoint is the same one Cursor uses.
+    static let clientID = "KbZUR41cY7W6zRSdpSUJ7I7mLYBKOCmB"
+    /// Refresh this close to the JWT's expiry so a slow request does not use a dead token.
+    static let refreshBuffer: TimeInterval = 30
+
+    /// Returns a usable access token. An expired (or missing) access token is refreshed with the
+    /// borrowed refresh token; the result stays in memory and is never written back to Cursor.
+    private func tokenForRequest(_ credentials: CursorCredentials, session: URLSession, now: Date) async
+        -> Result<String, ReadingFailure> {
+        if !credentials.accessToken.isEmpty,
+           let expiry = Self.jwtExpiry(credentials.accessToken),
+           expiry > now.addingTimeInterval(Self.refreshBuffer) {
+            return .success(credentials.accessToken)
+        }
+        if !credentials.accessToken.isEmpty, Self.jwtExpiry(credentials.accessToken) == nil {
+            return .success(credentials.accessToken)
+        }
+        guard let refreshToken = credentials.refreshToken, !refreshToken.isEmpty else {
+            return credentials.accessToken.isEmpty
+                ? .failure(.loginExpired(hint: Self.loginHint))
+                : .success(credentials.accessToken)
+        }
+
+        var request = URLRequest(url: baseURL.appendingPathComponent("oauth/token"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: [
+            "grant_type": "refresh_token",
+            "client_id": Self.clientID,
+            "refresh_token": refreshToken,
+        ])
+        return await HTTP.send(request, session: session).flatMap { data, response in
+            switch response.statusCode {
+            case 200..<300:
+                guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    return .failure(.unavailable("Unexpected response"))
+                }
+                if (object["shouldLogout"] as? Bool) == true {
+                    return .failure(.loginExpired(hint: Self.loginHint))
+                }
+                guard let token = (object["access_token"] as? String)?
+                    .trimmingCharacters(in: .whitespacesAndNewlines), !token.isEmpty else {
+                    return .failure(.loginExpired(hint: Self.loginHint))
+                }
+                return .success(token)
+            case 400, 401, 403:
+                return .failure(.loginExpired(hint: Self.loginHint))
+            case 429:
+                return .failure(.rateLimited(retryAfter: HTTP.retryAfter(response, now: now)))
+            default:
+                return .failure(.unavailable(HTTP.statusMessage(response.statusCode)))
+            }
+        }
+    }
+
+    /// The `exp` claim of a JWT, or nil when the token is not a JWT with a numeric expiry.
+    static func jwtExpiry(_ token: String) -> Date? {
+        let parts = token.split(separator: ".")
+        guard parts.count == 3 else { return nil }
+        var payload = String(parts[1])
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        while payload.count % 4 != 0 { payload += "=" }
+        guard let data = Data(base64Encoded: payload),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let expiry = (object["exp"] as? NSNumber)?.doubleValue else { return nil }
+        return Date(timeIntervalSince1970: expiry)
+    }
+
     // MARK: - Requests
 
-    private func request(_ method: String, _ credentials: CursorCredentials) -> URLRequest {
+    private func request(_ method: String, accessToken: String) -> URLRequest {
         var request = URLRequest(url: baseURL.appendingPathComponent("aiserver.v1.DashboardService/\(method)"))
         request.httpMethod = "POST"
         request.httpBody = Data("{}".utf8)
-        request.setValue("Bearer \(credentials.accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("1", forHTTPHeaderField: "Connect-Protocol-Version")
         return request
     }
 
-    private func fetchPlan(_ credentials: CursorCredentials, session: URLSession, now: Date) async
+    private func fetchPlan(_ accessToken: String, session: URLSession, now: Date) async
         -> Result<PlanInfo, ReadingFailure> {
-        await HTTP.send(request("GetPlanInfo", credentials), session: session).flatMap { data, response in
+        await HTTP.send(request("GetPlanInfo", accessToken: accessToken), session: session).flatMap { data, response in
             switch response.statusCode {
             case 200..<300:
                 guard let body = try? JSONDecoder().decode(PlanResponse.self, from: data),
@@ -177,9 +271,9 @@ struct CursorProvider: Provider {
         }
     }
 
-    private func fetchUsage(_ credentials: CursorCredentials, session: URLSession, now: Date) async
+    private func fetchUsage(_ accessToken: String, session: URLSession, now: Date) async
         -> Result<UsageResponse.PlanUsage, ReadingFailure> {
-        await HTTP.send(request("GetCurrentPeriodUsage", credentials), session: session).flatMap { data, response in
+        await HTTP.send(request("GetCurrentPeriodUsage", accessToken: accessToken), session: session).flatMap { data, response in
             switch response.statusCode {
             case 200..<300:
                 guard let body = try? JSONDecoder().decode(UsageResponse.self, from: data),
