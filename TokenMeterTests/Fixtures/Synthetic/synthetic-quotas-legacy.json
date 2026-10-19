@@ -1,0 +1,14 @@
+{
+  "subscription": {
+    "limit": 1000,
+    "requests": 200,
+    "renewsAt": "2026-11-01T00:00:00Z"
+  },
+  "search": {
+    "hourly": {
+      "limit": 100,
+      "requests": 5,
+      "renewsAt": "2026-10-18T12:30:00Z"
+    }
+  }
+}

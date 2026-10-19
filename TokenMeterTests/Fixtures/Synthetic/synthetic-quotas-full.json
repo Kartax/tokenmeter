@@ -1,0 +1,29 @@
+{
+  "rollingFiveHourLimit": {
+    "remaining": 40,
+    "max": 100,
+    "nextTickAt": "2026-10-18T15:00:00Z",
+    "limited": false
+  },
+  "weeklyTokenLimit": {
+    "percentRemaining": 25,
+    "nextRegenAt": "2026-10-22T00:00:00Z"
+  },
+  "subscription": {
+    "limit": 1000,
+    "requests": 250,
+    "renewsAt": "2026-11-01T00:00:00Z"
+  },
+  "search": {
+    "hourly": {
+      "limit": 100,
+      "requests": 40,
+      "renewsAt": "2026-10-18T12:30:00Z"
+    }
+  },
+  "freeToolCalls": {
+    "limit": 50,
+    "requests": 10,
+    "renewsAt": "2026-10-19T00:00:00Z"
+  }
+}

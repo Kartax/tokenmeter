@@ -1,0 +1,8 @@
+{
+  "rollingFiveHourLimit": {
+    "remaining": 0,
+    "max": 100,
+    "nextTickAt": "2026-10-18T15:00:00Z",
+    "limited": true
+  }
+}
