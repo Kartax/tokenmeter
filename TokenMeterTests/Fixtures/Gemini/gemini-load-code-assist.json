@@ -1,0 +1,7 @@
+{
+  "cloudaicompanionProject": "test-project-123",
+  "currentTier": {
+    "id": "standard-tier",
+    "name": "Standard"
+  }
+}
