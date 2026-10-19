@@ -1,0 +1,10 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "planCode": "mimo-token-plan-monthly",
+    "planName": "MiMo Token Plan",
+    "currentPeriodEnd": "2026-11-01 00:00:00",
+    "expired": false
+  }
+}

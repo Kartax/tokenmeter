@@ -1,0 +1,23 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "monthUsage": {
+      "percent": 32.0,
+      "items": [
+        {
+          "name": "MiMo tokens",
+          "used": 320000,
+          "limit": 1000000,
+          "percent": 32.0
+        },
+        {
+          "name": "Bonus tokens",
+          "used": 10,
+          "limit": 0,
+          "percent": 0
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "balance": "not-a-number",
+    "currency": "USD"
+  }
+}
