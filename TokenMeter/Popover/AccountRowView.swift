@@ -4,8 +4,6 @@ import SwiftUI
 struct AccountRowView: View {
     var account: Account
     var state: AccountDisplayState
-    /// Last successful Reading (also while stale or failing), for the Plan in the header.
-    var lastReading: Reading?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -36,7 +34,7 @@ struct AccountRowView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// "Ollama Cloud · Personal — Pro"
+    /// "Personal"
     private var header: some View {
         HStack(spacing: 6) {
             Image(systemName: account.kind.symbolName)
@@ -46,14 +44,12 @@ struct AccountRowView: View {
     }
 
     private var title: String {
-        var title = "\(account.kind.displayName) · \(account.label)"
-        if let plan = lastReading?.plan { title += " — \(plan)" }
-        return title
+        account.label
     }
 }
 
 /// "Login expired — <hint>"; the hint links to the Account in Settings when that's where the
-/// login is fixed (e.g. Codex "Sign in again", Ollama "Check API key").
+/// login is fixed (e.g. Codex "Sign in again", Ollama and Venice "Check API key").
 private struct LoginExpiredLine: View {
     var account: Account
     var hint: String

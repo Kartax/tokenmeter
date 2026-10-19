@@ -23,7 +23,7 @@ enum CodexSignIn {
 struct CodexAddAccountForm: View {
     var store: AccountStore
     var onDone: (UUID?) -> Void
-    @State private var label = "Personal"
+    @State private var label = ProviderKind.codex.displayName
     @State private var signingIn = false
     @State private var message: String?
     /// Fixed for the whole form so the Keychain item and the Account share one id.
@@ -63,7 +63,7 @@ struct CodexAddAccountForm: View {
 
     private var account: Account {
         let trimmed = label.trimmingCharacters(in: .whitespaces)
-        return Account(id: accountID, kind: .codex, label: trimmed.isEmpty ? "Personal" : trimmed)
+        return Account(id: accountID, kind: .codex, label: trimmed.isEmpty ? nil : trimmed)
     }
 
     private func complete(_ credentials: CodexCredentials) async -> String? {

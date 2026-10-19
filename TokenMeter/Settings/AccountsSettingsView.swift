@@ -112,6 +112,8 @@ private struct AddAccountSheet: View {
                 CodexAddAccountForm(store: store, onDone: onDone)
             case .nous:
                 NousAddAccountForm(store: store, onDone: onDone)
+            case .venice:
+                VeniceAddAccountForm(store: store, onDone: onDone)
             }
         }
         .padding(20)
@@ -178,6 +180,8 @@ private struct AccountDetailView: View {
                 CodexAccountSettings(store: store, account: account)
             case .nous:
                 NousAccountSettings(store: store, account: account)
+            case .venice:
+                VeniceAccountSettings(store: store, account: account)
             }
             HStack {
                 Spacer()

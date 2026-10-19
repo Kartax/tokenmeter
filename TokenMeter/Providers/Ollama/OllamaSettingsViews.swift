@@ -31,7 +31,7 @@ enum OllamaKeyCheck {
 struct OllamaAddAccountForm: View {
     var store: AccountStore
     var onDone: (UUID?) -> Void
-    @State private var label = "Personal"
+    @State private var label = ProviderKind.ollama.displayName
     @State private var apiKey = ""
     @State private var checking = false
     @State private var errorMessage: String?
@@ -66,7 +66,7 @@ struct OllamaAddAccountForm: View {
     private func add() async {
         let key = OllamaKeyCheck.normalized(apiKey)
         let trimmedLabel = label.trimmingCharacters(in: .whitespaces)
-        let account = Account(kind: .ollama, label: trimmedLabel.isEmpty ? "Personal" : trimmedLabel)
+        let account = Account(kind: .ollama, label: trimmedLabel.isEmpty ? nil : trimmedLabel)
         checking = true
         errorMessage = nil
         defer { checking = false }

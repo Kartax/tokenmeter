@@ -192,8 +192,10 @@ struct ClaudeAddAccountForm: View {
     }
 
     private static func defaultLabel(for login: ClaudeLogin) -> String {
-        guard let path = login.configDirectory, !path.isEmpty else { return "Personal" }
+        let fallback = ProviderKind.claude.displayName
+        guard let path = login.configDirectory, !path.isEmpty else { return fallback }
         let name = URL(fileURLWithPath: path).lastPathComponent
+        guard !name.isEmpty else { return fallback }
         return name.hasPrefix(".") ? String(name.dropFirst()) : name
     }
 

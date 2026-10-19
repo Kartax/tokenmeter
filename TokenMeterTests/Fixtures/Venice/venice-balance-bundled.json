@@ -1,0 +1,11 @@
+{
+  "canConsume": true,
+  "consumptionCurrency": "BUNDLED_CREDITS",
+  "balances": {
+    "diem": null,
+    "usd": 3,
+    "bundledCredits": 120,
+    "earnedCredits": 7
+  },
+  "diemEpochAllocation": 0
+}

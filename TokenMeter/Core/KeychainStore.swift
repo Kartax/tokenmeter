@@ -59,7 +59,7 @@ struct KeychainStore: Sendable {
     }
 }
 
-/// Credential source for Providers whose secrets TokenMeter owns (Ollama, Codex, Nous):
+/// Credential source for Providers whose secrets TokenMeter owns (Ollama, Codex, Nous, Venice):
 /// JSON-encodes `Credentials` into the Account's Keychain item.
 struct KeychainCredentialSource<Credentials: Codable & Sendable>: CredentialSource {
     var keychain = KeychainStore()

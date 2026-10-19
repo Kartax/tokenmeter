@@ -18,6 +18,9 @@ enum ProviderRegistry {
         case .nous:
             CredentialedReader(provider: NousProvider.live,
                                source: NousProvider.credentialSource)
+        case .venice:
+            CredentialedReader(provider: VeniceProvider.live,
+                               source: VeniceProvider.credentialSource)
         }
     }
 

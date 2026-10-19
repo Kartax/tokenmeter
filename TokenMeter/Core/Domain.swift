@@ -4,7 +4,7 @@ import Foundation
 
 /// The compiled-in Providers (ADR 0004). Implementations are listed in `ProviderRegistry`.
 enum ProviderKind: String, Codable, CaseIterable, Sendable {
-    case claude, codex, ollama, nous
+    case claude, codex, ollama, nous, venice
 
     var displayName: String {
         switch self {
@@ -12,6 +12,7 @@ enum ProviderKind: String, Codable, CaseIterable, Sendable {
         case .codex: "Codex"
         case .ollama: "Ollama Cloud"
         case .nous: "Nous Portal"
+        case .venice: "Venice.ai"
         }
     }
 
@@ -22,6 +23,7 @@ enum ProviderKind: String, Codable, CaseIterable, Sendable {
         case .codex: "chevron.left.forwardslash.chevron.right"
         case .ollama: "cloud"
         case .nous: "brain"
+        case .venice: "water.waves"
         }
     }
 }
@@ -55,12 +57,12 @@ struct Account: Identifiable, Equatable, Sendable {
     /// Claude: optional `CLAUDE_CONFIG_DIR` path (nil = default login). Unused by other Providers.
     var claudeConfigDirectory: String?
 
-    init(id: UUID = UUID(), kind: ProviderKind, label: String, order: Int = 0,
+    init(id: UUID = UUID(), kind: ProviderKind, label: String? = nil, order: Int = 0,
          threshold: NotificationThreshold = .default, showAllWindows: Bool = false,
          claudeConfigDirectory: String? = nil) {
         self.id = id
         self.kind = kind
-        self.label = label
+        self.label = label ?? kind.displayName
         self.order = order
         self.threshold = threshold
         self.showAllWindows = showAllWindows

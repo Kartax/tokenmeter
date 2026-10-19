@@ -1,0 +1,11 @@
+{
+  "canConsume": true,
+  "consumptionCurrency": "USD",
+  "balances": {
+    "diem": null,
+    "usd": 25,
+    "bundledCredits": null,
+    "earnedCredits": null
+  },
+  "diemEpochAllocation": 0
+}

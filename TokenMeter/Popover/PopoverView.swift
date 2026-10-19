@@ -16,8 +16,7 @@ struct PopoverView: View {
             } else {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(store.accounts) { account in
-                        AccountRowView(account: account, state: store.displayState(of: account),
-                                       lastReading: store.readings[account.id])
+                        AccountRowView(account: account, state: store.displayState(of: account))
                     }
                 }
                 .padding(12)
