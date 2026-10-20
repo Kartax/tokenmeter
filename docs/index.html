@@ -152,12 +152,14 @@
     .provider-card {
       display: flex; align-items: center; gap: 11px;
       min-height: 62px; padding: 12px 14px;
+      color: inherit; text-decoration: none;
       background: rgba(255, 255, 255, .03);
       background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .015));
       border: 1px solid var(--border);
       border-radius: 13px;
       transition: border-color .15s ease, transform .15s ease, background .15s ease;
     }
+    .provider-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .provider-card:hover {
       transform: translateY(-1px);
       border-color: rgba(255, 255, 255, .2);
@@ -317,82 +319,82 @@
         Nineteen providers, one popover. Add an account for each service you use.
       </p>
       <div class="providers-grid">
-        <div class="provider-card" style="--brand: #FF6A00; --icon: url('icons/alibabacloud.svg')">
+        <a class="provider-card" href="https://www.alibabacloud.com/en/product/modelstudio" target="_blank" rel="noopener" style="--brand: #FF6A00; --icon: url('icons/alibabacloud.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Alibaba Cloud</span>
-        </div>
-        <div class="provider-card" style="--brand: #8AB4F8; --icon: url('icons/antigravity.svg')">
+          <span class="provider-name">Alibaba Cloud<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://antigravity.google/" target="_blank" rel="noopener" style="--brand: #8AB4F8; --icon: url('icons/antigravity.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Antigravity</span>
-        </div>
-        <div class="provider-card" style="--brand: #D97757; --icon: url('icons/claude.svg')">
+          <span class="provider-name">Antigravity<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://claude.ai/" target="_blank" rel="noopener" style="--brand: #D97757; --icon: url('icons/claude.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Claude</span>
-        </div>
-        <div class="provider-card" style="--brand: #10A37F; --icon: url('icons/codex.svg')">
+          <span class="provider-name">Claude<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://chatgpt.com/codex" target="_blank" rel="noopener" style="--brand: #10A37F; --icon: url('icons/codex.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Codex</span>
-        </div>
-        <div class="provider-card" style="--brand: #E6E8EA; --icon: url('icons/cursor.svg')">
+          <span class="provider-name">Codex<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://cursor.com/" target="_blank" rel="noopener" style="--brand: #E6E8EA; --icon: url('icons/cursor.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Cursor</span>
-        </div>
-        <div class="provider-card" style="--brand: #4D6BFE; --icon: url('icons/deepseek.svg')">
+          <span class="provider-name">Cursor<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://platform.deepseek.com/" target="_blank" rel="noopener" style="--brand: #4D6BFE; --icon: url('icons/deepseek.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">DeepSeek</span>
-        </div>
-        <div class="provider-card" style="--brand: #8E75FF; --icon: url('icons/googlegemini.svg')">
+          <span class="provider-name">DeepSeek<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://gemini.google.com/" target="_blank" rel="noopener" style="--brand: #8E75FF; --icon: url('icons/googlegemini.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Gemini</span>
-        </div>
-        <div class="provider-card" style="--brand: #E6E8EA; --icon: url('icons/githubcopilot.svg')">
+          <span class="provider-name">Gemini<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://github.com/features/copilot" target="_blank" rel="noopener" style="--brand: #E6E8EA; --icon: url('icons/githubcopilot.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">GitHub Copilot</span>
-        </div>
-        <div class="provider-card" style="--brand: #7C5CFF; --icon: url('icons/kimi.svg')">
+          <span class="provider-name">GitHub Copilot<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://www.kimi.com/coding" target="_blank" rel="noopener" style="--brand: #7C5CFF; --icon: url('icons/kimi.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Kimi</span>
-        </div>
-        <div class="provider-card" style="--brand: #F23F5D; --icon: url('icons/minimax.svg')">
+          <span class="provider-name">Kimi<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://www.minimax.io/" target="_blank" rel="noopener" style="--brand: #F23F5D; --icon: url('icons/minimax.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">MiniMax</span>
-        </div>
-        <div class="provider-card" style="--brand: #FF7000; --icon: url('icons/mistralai.svg')">
+          <span class="provider-name">MiniMax<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://mistral.ai/" target="_blank" rel="noopener" style="--brand: #FF7000; --icon: url('icons/mistralai.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Mistral</span>
-        </div>
-        <div class="provider-card" style="--brand: #E8A87C; --icon: url('icons/nous.svg')">
+          <span class="provider-name">Mistral<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://portal.nousresearch.com/" target="_blank" rel="noopener" style="--brand: #E8A87C; --icon: url('icons/nous.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Nous Portal</span>
-        </div>
-        <div class="provider-card" style="--brand: #E6E8EA; --icon: url('icons/ollama.svg')">
+          <span class="provider-name">Nous Portal<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://ollama.com/" target="_blank" rel="noopener" style="--brand: #E6E8EA; --icon: url('icons/ollama.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Ollama Cloud</span>
-        </div>
-        <div class="provider-card" style="--brand: #E6E8EA; --icon: url('icons/opencode.svg')">
+          <span class="provider-name">Ollama Cloud<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://opencode.ai/" target="_blank" rel="noopener" style="--brand: #E6E8EA; --icon: url('icons/opencode.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">OpenCode</span>
-        </div>
-        <div class="provider-card" style="--brand: #A78BFA; --icon: url('icons/synthetic.svg')">
+          <span class="provider-name">OpenCode<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://synthetic.new/" target="_blank" rel="noopener" style="--brand: #A78BFA; --icon: url('icons/synthetic.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Synthetic</span>
-        </div>
-        <div class="provider-card" style="--brand: #14B8A6; --icon: url('icons/venice.svg')">
+          <span class="provider-name">Synthetic<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://venice.ai/" target="_blank" rel="noopener" style="--brand: #14B8A6; --icon: url('icons/venice.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Venice.ai</span>
-        </div>
-        <div class="provider-card" style="--brand: #E6E8EA; --icon: url('icons/xai.svg')">
+          <span class="provider-name">Venice.ai<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://x.ai/" target="_blank" rel="noopener" style="--brand: #E6E8EA; --icon: url('icons/xai.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">xAI</span>
-        </div>
-        <div class="provider-card" style="--brand: #FF6900; --icon: url('icons/xiaomi.svg')">
+          <span class="provider-name">xAI<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://platform.xiaomimimo.com/" target="_blank" rel="noopener" style="--brand: #FF6900; --icon: url('icons/xiaomi.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Xiaomi MiMo</span>
-        </div>
-        <div class="provider-card" style="--brand: #4C8DFF; --icon: url('icons/zai.svg')">
+          <span class="provider-name">Xiaomi MiMo<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
+        <a class="provider-card" href="https://z.ai/" target="_blank" rel="noopener" style="--brand: #4C8DFF; --icon: url('icons/zai.svg')">
           <span class="provider-icon" aria-hidden="true"></span>
-          <span class="provider-name">Z.ai</span>
-        </div>
+          <span class="provider-name">Z.ai<span class="sr-only"> (opens in a new tab)</span></span>
+        </a>
       </div>
     </section>
 
