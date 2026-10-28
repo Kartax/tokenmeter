@@ -55,7 +55,7 @@ brew install --cask kartax/tap/tokenmeter
 | Antigravity | Borrows the **Antigravity / `agy`** login (CLI token file or Keychain) | Reads per-model remaining quota. Tokens are refreshed in memory only when the borrowed token carries its OAuth client pair, and never stored. |
 | MiniMax | **API key** + region (Global or China), pasted in Settings | Reads the Token Plan's current session window from `/v1/token_plan/remains`. |
 | Kimi | Borrows the **Kimi Code** login (`~/.kimi/credentials/kimi-code.json`) | Reads the plan usage plus each windowed limit (5-hour, weekly, …). Tokens are refreshed in memory only and never stored. |
-| Synthetic | **API key**, pasted in Settings | Reads the rolling 5-hour request limit, weekly budget and optional legacy subscription/search quotas. |
+| Synthetic | **API key**, pasted in Settings | Reads weekly plan credits (`planWeeklyLimit`) and older rolling 5-hour, weekly token and subscription/search quotas. Weekly plan regeneration ticks are not shown as full resets. |
 | DeepSeek | **API key**, pasted in Settings | Reads the account's USD/CNY balance (total, granted and topped-up amounts as reported). |
 | Mistral | **Admin API key**, pasted in Settings | Reads the Organization's monthly spend against its spend limit. Admin keys require an Enterprise plan; standard inference keys are rejected. |
 | Xiaomi MiMo | **Browser cookies**, pasted in Settings | Reads the console balance plus Token Plan credits from `platform.xiaomimimo.com`. Copy the `Cookie` header while signed in; the two required cookies are `api-platform_serviceToken` and `userId`. |

@@ -57,6 +57,17 @@ final class SyntheticProviderTests: XCTestCase {
         ])
     }
 
+    func testPlanWeeklyCreditsAreMainInsteadOfUnusedSubscriptionRequests() async throws {
+        let reading = try await read(["GET /v2/quotas": .fixture("synthetic-quotas-plan-weekly")]).get()
+
+        let main = try XCTUnwrap(reading.quotas.first(where: { $0.window.isMain }))
+        XCTAssertEqual(main.window.identity, .week)
+        XCTAssertEqual(main.percentUsed, 13.663836, accuracy: 0.000001)
+        // The next 2% regeneration tick is not a full quota reset.
+        XCTAssertNil(main.window.resetsAt)
+        XCTAssertEqual(reading.quotas.filter { $0.window.identity == .week }.count, 1)
+    }
+
     func testLegacySubscriptionIsMainAndSearchIsAnExtra() async throws {
         let reading = try await read(["GET /v2/quotas": .fixture("synthetic-quotas-legacy")]).get()
 

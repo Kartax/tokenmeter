@@ -1,0 +1,19 @@
+{
+  "subscription": {
+    "limit": 500,
+    "requests": 0,
+    "renewsAt": "2026-10-29T00:59:07.654Z"
+  },
+  "search": {
+    "hourly": {
+      "limit": 250,
+      "requests": 0,
+      "renewsAt": "2026-10-28T20:59:07.655Z"
+    }
+  },
+  "planWeeklyLimit": {
+    "nextRegenAt": "2026-10-28T23:01:43.000Z",
+    "percentRemaining": 86.33616400000001,
+    "nextRegenPercent": 2
+  }
+}

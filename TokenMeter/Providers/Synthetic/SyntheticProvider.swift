@@ -5,9 +5,8 @@ struct SyntheticCredentials: Codable, Equatable, Sendable {
     var apiKey: String
 }
 
-/// Reads `GET /v2/quotas`. The response's known slots are mapped by their fields, not by position:
-/// the rolling five-hour limit, the weekly token budget, and optionally a legacy monthly request
-/// count plus an hourly search allowance.
+/// Reads `GET /v2/quotas`, including the current weekly plan credits and older quota shapes:
+/// the rolling five-hour limit, weekly token budget, legacy subscription requests and search.
 /// See https://dev.synthetic.new/docs/synthetic/quotas
 struct SyntheticProvider: Provider {
     static let defaultBaseURL = URL(string: "https://api.synthetic.new")!
@@ -65,11 +64,13 @@ struct SyntheticProvider: Provider {
                 percentUsed: percent))
         }
 
-        if let weekly = body.weeklyTokenLimit, let percentRemaining = weekly.percentRemaining {
+        if let weekly = body.planWeeklyLimit ?? body.weeklyTokenLimit,
+           let percentRemaining = weekly.percentRemaining {
             if mainIndex == nil { mainIndex = quotas.count }
             quotas.append(Quota(
                 window: Window(identity: .week, title: "Weekly budget", isMain: false,
-                               resetsAt: HTTP.date(weekly.nextRegenAt), length: 7 * 24 * 3600),
+                               resetsAt: body.planWeeklyLimit == nil ? HTTP.date(weekly.nextRegenAt) : nil,
+                               length: 7 * 24 * 3600),
                 percentUsed: 100 - percentRemaining))
         }
 
@@ -97,6 +98,8 @@ struct SyntheticProvider: Provider {
 
     struct QuotaResponse: Decodable {
         var rollingFiveHourLimit: RollingFiveHourLimit?
+        // Current plans replenish incrementally; nextRegenAt is not a full reset.
+        var planWeeklyLimit: WeeklyTokenLimit?
         var weeklyTokenLimit: WeeklyTokenLimit?
         var subscription: Subscription?
         var search: Search?
