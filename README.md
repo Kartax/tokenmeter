@@ -22,7 +22,7 @@ brew install --cask kartax/tap/tokenmeter
 
 ## Screenshots
 
-![TokenMeter popover showing usage windows and credit balances for Claude, Codex, GitHub Copilot and Ollama Cloud](docs/popover.png)
+![TokenMeter popover open beneath its highlighted macOS menu-bar icon, showing usage windows and credit balances for OpenAI, Ollama and Synthetic](docs/popover.png)
 
 ![TokenMeter Settings showing the Accounts tab with Claude selected](docs/settings.png)
 
