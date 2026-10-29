@@ -24,7 +24,7 @@ brew install --cask kartax/tap/tokenmeter
 
 ![TokenMeter popover open beneath its highlighted macOS menu-bar icon, showing usage windows and credit balances for OpenAI, Ollama and Synthetic](docs/popover.png)
 
-![TokenMeter Settings showing the Accounts tab with Claude selected](docs/settings.png)
+![TokenMeter Settings showing the Accounts tab with the OpenAI account selected, using Codex on the Plus plan](docs/settings.png)
 
 ## What it does
 
